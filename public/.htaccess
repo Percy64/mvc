@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+  Options -Multiviews
+  RewriteEngine On
+  # Ajustar esta base a la URL real de la carpeta /public
+  # Ejemplos:
+  # - Si accedes como http://localhost/MVC/public/ -> RewriteBase /MVC/public/
+  # - Si configuraste el VirtualHost apuntando a /public -> RewriteBase /
+  RewriteBase /MVC/public/
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+</IfModule>

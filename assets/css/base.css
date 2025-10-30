@@ -1,0 +1,240 @@
+:root{
+    --primary:#0d6efd;
+    --secondary:#6c757d;
+}
+/* CSS base del proyecto */
+:root{
+    --primary:#0d6efd;
+    --secondary:#6c757d;
+    --menu-icon-size: 24px; /* tamaño por defecto para iconos del menú (doble) */
+    --logo-size: 24px; /* tamaño por defecto para el logo (doble, control separado) */
+    --navbar-height: 16px; /* altura del navbar (ajusta lo que necesites) */
+    --menu-fixed-size: 22px; /* tamaño fijo (px) para el icono del menu (duplicado) */
+    --logo-fixed-size: 32px; /* tamaño fijo (px) para el logo (duplicado) */
+}
+body{
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Navbar personalizado: centrar la marca (horizontal y vertical) */
+nav.navbar{
+    min-height: var(--navbar-height);
+}
+/* Alinear el contenido verticalmente */
+.navbar .container, .navbar .navbar-nav, .navbar .d-flex{ align-items: center; }
+
+/* Use CSS Grid to arrange left / center / right sections of the navbar on one line.
+   The collapse (mobile menu) will move to a second row when it has the .show class,
+   avoiding overlap with the centered brand. */
+.navbar .container{
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: .5rem;
+}
+.brand-center{ justify-self: center; display: flex; align-items: center; gap: .5rem; }
+.nav-actions{ justify-self: end; }
+
+/* Place the collapse in the grid; when hidden it stays in the first row, when shown it moves to row 2 and spans all columns */
+.navbar .collapse{ grid-column: 1 / -1; grid-row: 1; }
+.navbar .collapse.show{ grid-row: 2; }
+/* Right-side actions (login / register) */
+.nav-actions{ display: flex; align-items: center; gap: .5rem; }
+/* Ensure the left menu icon remains fixed size and aligned to the left */
+.menu-icon-left{ display: inline-block; }
+.menu-icon-left img, .menu-icon-left .menu-icon{ height: var(--menu-fixed-size) !important; max-height: var(--menu-fixed-size) !important; width: auto !important; }
+/* Escalar logo y menu relativo a la altura del navbar */
+.navbar-logo{ height: calc(var(--navbar-height) * 0.6); max-height: calc(var(--navbar-height) * 0.9); }
+.menu-icon{ height: calc(var(--navbar-height) * 0.45); max-height: calc(var(--navbar-height) * 0.9); }
+/* Menu icon controlable: usa la variable --menu-fixed-size por defecto.
+   Puedes sobrescribir por elemento así: <img class="menu-icon" style="--menu-fixed-size:30px"> */
+.menu-icon{
+    height: var(--menu-fixed-size) !important;
+    max-height: var(--menu-fixed-size) !important;
+    width: auto !important;
+}
+/* Asegurar que el botón toggle use el mismo tamaño */
+.btn.d-lg-none img.menu-icon{ height: var(--menu-fixed-size) !important; max-height: var(--menu-fixed-size) !important; }
+
+/* Utilidades rápidas para tamaños predefinidos */
+.menu-icon-xs{ --menu-fixed-size: 12px !important; }
+.menu-icon-sm{ --menu-fixed-size: 16px !important; }
+.menu-icon-md{ --menu-fixed-size: 20px !important; }
+.menu-icon-lg{ --menu-fixed-size: 20px !important; }
+/* Tamaño del logo en la navbar: ajustar aquí */
+
+/* Clase reutilizable para iconos de menú */
+
+/* Asegurar que el contenido colapsable esté por debajo del logo */
+
+/* Ajustes responsivos: logo más pequeño en móviles */
+/* Notas:
+   Las reglas específicas de la barra de menú fueron eliminadas para dejar
+   la navbar con el estilo por defecto de Bootstrap. Si necesitas volver a
+   aplicar estilos personalizados, añade reglas nuevas en este archivo.
+*/
+
+/* Ajustes menores */
+.container main{ padding-bottom: 3rem; }
+
+/* Forzar tamaño máximo de las imágenes del navbar */
+.navbar-logo{ height: var(--logo-fixed-size) !important; max-height: var(--logo-fixed-size) !important; width: auto !important; }
+
+/* Utilidades pequeñas */
+.hidden-if-no-image{ display: inline-block; }
+
+/* Quitar bordes/efectos azules en focus de botones y controles */
+.btn:focus, .btn:active:focus, .btn:focus-visible, .dropdown-toggle:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+.btn-outline-primary:focus, .btn-outline-secondary:focus, .btn-outline-primary:active, .btn-outline-secondary:active{
+    border-color: transparent !important;
+}
+
+/* Ocultar la flecha (caret) que añade Bootstrap al dropdown-toggle */
+.dropdown-toggle::after,
+button.dropdown-toggle::after,
+.btn.dropdown-toggle::after {
+    display: none !important;
+    content: none !important;
+    background-image: none !important;
+    border: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Opcional: ocultar la línea divisoria si no se desea */
+.dropdown-divider { display: none !important; }
+
+/* Evitar borde azul en elementos con focus por teclado (accessibility still available) */
+:focus { outline: none !important; }
+
+/* Uniform size for featured pet images used in the home cards */
+.pet-img-uniform{
+    width: 100%;           /* fill card width */
+    height: 200px;         /* fixed height for uniformity; adjust if you prefer taller/shorter */
+    object-fit: cover;     /* crop to fill while keeping aspect ratio */
+    display: block;
+}
+
+/* Responsive adjustment: slightly taller images on larger screens */
+@media (min-width: 992px){
+    .pet-img-uniform{ height: 220px; }
+}
+
+/* Larger variant for main/profile images */
+.pet-img-main{
+    width: 100%;
+    height: 260px; /* matches previous max-height used in perfil */
+    object-fit: cover;
+    display: block;
+}
+
+/* Home featured images: optimized size for the homepage cards */
+.pet-img-home{
+    width: 100%;
+    height: 240px; /* reduced size for better card proportion */
+    object-fit: cover;
+    display: block;
+}
+
+@media (min-width: 992px){
+    .pet-img-home{ height: 280px; }
+}
+
+/* Standard image wrapper to enforce an aspect ratio and reduce layout shift.
+     Use it like:
+         <div class="pet-img-wrapper pet-img--4-3">
+             <img src="..." alt="..." loading="lazy" decoding="async">
+         </div>
+*/
+.pet-img-wrapper{
+        width: 100%;
+        overflow: hidden;
+        background-color: #f6f6f6; /* subtle placeholder background */
+}
+
+/* Aspect ratio helpers (fallback-friendly). Adjust or add new ratios if needed. */
+.pet-img--4-3{ aspect-ratio: 4 / 3; }
+.pet-img--3-2{ aspect-ratio: 3 / 2; }
+.pet-img--16-9{ aspect-ratio: 16 / 9; }
+
+/* Square images helper */
+.pet-img--1-1{ aspect-ratio: 1 / 1; }
+
+.pet-img-wrapper img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s ease;
+}
+
+/* Hover effect for pet cards */
+.card:hover .pet-img-wrapper img{
+    transform: scale(1.05);
+}
+
+/* Ensure cards have consistent height */
+.card.h-100{
+    transition: box-shadow 0.3s ease;
+}
+
+.card.h-100:hover{
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Carousel container - limited width and centered */
+#mainCarousel {
+    max-width: 900px; /* Maximum width of carousel */
+    margin: 20px auto; /* Center the carousel with margin */
+    border-radius: 8px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow for rounded corners */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Subtle shadow */
+}
+
+/* Carousel image sizing and optimization */
+
+/* Carousel inner sizing: align with home view default height (400px) */
+.carousel-inner {
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: 400px; /* Match the default carousel height */
+    object-fit: cover; /* Crop images to fit while maintaining aspect ratio */
+    object-position: center; /* Center the cropped area */
+}
+
+/* Responsive carousel sizing */
+@media (max-width: 768px) {
+    #mainCarousel {
+        max-width: 95%; /* Almost full width on mobile */
+        margin: 15px auto; /* Smaller margin on mobile */
+    }
+    
+    .carousel-inner {
+        max-height: 240px; /* Slightly taller on mobile for better readability */
+    }
+    
+    .carousel-item img {
+        height: 240px;
+    }
+}
+
+@media (min-width: 1200px) {
+    #mainCarousel {
+        max-width: 1000px; /* Larger max width on big screens */
+    }
+    
+    .carousel-inner {
+        max-height: 420px;
+    }
+    
+    .carousel-item img {
+        height: 420px;
+    }
+}

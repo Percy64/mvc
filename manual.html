@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual del Framework MVC-2024</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            margin-top: 25px;
+        }
+        
+        h4 {
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+        
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e74c3c;
+        }
+        
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+            color: #333;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        blockquote {
+            border-left: 4px solid #bdc3c7;
+            margin: 15px 0;
+            padding-left: 15px;
+            color: #7f8c8d;
+        }
+        
+        .toc {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+        
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin: 5px 0;
+        }
+        
+        .toc a {
+            text-decoration: none;
+            color: #2980b9;
+        }
+        
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        
+        .warning {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        
+        @media print {
+            body {
+                max-width: none;
+                margin: 0;
+                padding: 15px;
+            }
+            
+            h1, h2 {
+                page-break-after: avoid;
+            }
+            
+            pre, table {
+                page-break-inside: avoid;
+            }
+            
+            .toc {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Manual del Framework MVC-2024</h1>
+
+<div class="toc">
+<h2>Tabla de Contenidos</h2>
+<ul>
+<li><a href="#introducción">1. Introducción</a></li>
+<li><a href="#instalación-y-configuración">2. Instalación y Configuración</a></li>
+<li><a href="#arquitectura-del-framework">3. Arquitectura del Framework</a></li>
+<li><a href="#estructura-de-directorios">4. Estructura de Directorios</a></li>
+<li><a href="#enrutamiento">5. Enrutamiento</a></li>
+<li><a href="#controladores">6. Controladores</a></li>
+<li><a href="#modelos">7. Modelos</a></li>
+<li><a href="#vistas">8. Vistas</a></li>
+<li><a href="#base-de-datos">9. Base de Datos</a></li>
+<li><a href="#seguridad">10. Seguridad</a></li>
+<li><a href="#ejemplos-prácticos">11. Ejemplos Prácticos</a></li>
+<li><a href="#mejores-prácticas">12. Mejores Prácticas</a></li>
+<li><a href="#resolución-de-problemas">13. Resolución de Problemas</a></li>
+</ul>
+</div>
+
+<h2 id="introducción">Introducción</h2>
+
+<p>MVC-2024 es un framework PHP personalizado diseñado para aplicaciones web siguiendo el patrón Modelo-Vista-Controlador (MVC). Está optimizado para funcionar en entornos XAMPP y utiliza un sistema de enrutamiento basado en URLs amigables.</p>
+
+<h3>Características Principales</h3>
+<ul>
+<li>Patrón MVC estricto</li>
+<li>Enrutamiento automático basado en URLs</li>
+<li>Autoloader personalizado para clases core</li>
+<li>Sistema de vistas con inyección de variables</li>
+<li>Capa de abstracción de base de datos con PDO</li>
+<li>Generación de tokens CSRF</li>
+<li>Manejo automático de errores 404</li>
+</ul>
+
+<h2 id="instalación-y-configuración">Instalación y Configuración</h2>
+
+<h3>Requisitos</h3>
+<ul>
+<li>PHP 7.4 o superior</li>
+<li>Apache con mod_rewrite habilitado</li>
+<li>MySQL/MariaDB</li>
+<li>XAMPP (recomendado)</li>
+</ul>
+
+<h3>Instalación</h3>
+<ol>
+<li>Clona o descarga el proyecto en tu directorio de XAMPP:
+<pre><code>c:\xampp\htdocs\MVC-2024\</code></pre></li>
+
+<li>Configura Apache para habilitar mod_rewrite en <code>httpd.conf</code>:
+<pre><code>LoadModule rewrite_module modules/mod_rewrite.so</code></pre></li>
+
+<li>Asegúrate de que el archivo <code>.htaccess</code> esté presente en el directorio <code>public/</code></li>
+
+<li>Configura la base de datos en <code>app/core/DataBase.php</code>:
+<pre><code>private static $host = "localhost";
+private static $dbname = "tu_base_de_datos";
+private static $dbuser = "root";
+private static $dbpass = "";</code></pre></li>
+</ol>
+
+<h3>URL de Acceso</h3>
+<p>El framework está configurado para funcionar en:</p>
+<pre><code>http://localhost/MVC-2024/</code></pre>
+
+<h2 id="arquitectura-del-framework">Arquitectura del Framework</h2>
+
+<h3>Flujo de Ejecución</h3>
+<ol>
+<li><strong>Punto de entrada</strong>: <code>public/index.php</code></li>
+<li><strong>Autoloader</strong>: Carga automática de clases core</li>
+<li><strong>App</strong>: Parsea la URL y determina el controlador/acción</li>
+<li><strong>Controller</strong>: Procesa la lógica de negocio</li>
+<li><strong>Model</strong>: Interactúa con la base de datos (opcional)</li>
+<li><strong>View</strong>: Renderiza la respuesta HTML</li>
+</ol>
+
+<h3>Componentes Core</h3>
+
+<h4>App.php</h4>
+<p>Clase principal que maneja el enrutamiento:</p>
+<ul>
+<li>Parsea URLs en formato <code>/controlador/accion/parametros</code></li>
+<li>Carga controladores dinámicamente</li>
+<li>Maneja errores 404 automáticamente</li>
+</ul>
+
+<h4>Autoloader.php</h4>
+<p>Sistema de carga automática para clases core:</p>
+<ul>
+<li>Clases autoloadeables: <code>App</code>, <code>Controller</code>, <code>Model</code>, <code>Response</code>, <code>DataBase</code></li>
+<li>Convierte namespaces a rutas de archivos</li>
+</ul>
+
+<h4>Controller.php</h4>
+<p>Clase base para todos los controladores:</p>
+<ul>
+<li>Métodos de utilidad (<code>path()</code>, <code>viewDir()</code>)</li>
+<li>Generación de tokens de seguridad</li>
+<li>Manejo de errores 404</li>
+</ul>
+
+<h4>Response.php</h4>
+<p>Sistema de renderizado de vistas:</p>
+<ul>
+<li>Inyección de variables en plantillas</li>
+<li>Validación de rutas de vistas</li>
+<li>Manejo de errores de vistas no encontradas</li>
+</ul>
+
+<h4>Model.php</h4>
+<p>Clase base para modelos:</p>
+<ul>
+<li>Métodos CRUD básicos</li>
+<li>Integración con DataBase</li>
+<li>Patrón Active Record simplificado</li>
+</ul>
+
+<h4>DataBase.php</h4>
+<p>Capa de abstracción de base de datos:</p>
+<ul>
+<li>Conexión singleton con PDO</li>
+<li>Prepared statements automáticos</li>
+<li>Métodos de consulta seguros</li>
+</ul>
+
+<h2 id="estructura-de-directorios">Estructura de Directorios</h2>
+
+<pre><code>MVC-2024/
+├── app/
+│   ├── controllers/        # Controladores de la aplicación
+│   │   ├── HomeController.php
+│   │   ├── SiteController.php
+│   │   └── UserController.php
+│   ├── core/              # Clases core del framework
+│   │   ├── App.php
+│   │   ├── Autoloader.php
+│   │   ├── Controller.php
+│   │   ├── DataBase.php
+│   │   ├── Model.php
+│   │   └── Response.php
+│   ├── models/            # Modelos de datos
+│   │   └── UserModel.php
+│   └── views/             # Plantillas de vistas
+│       ├── home/
+│       │   ├── 404.php
+│       │   └── inicio.php
+│       └── inc/
+│           └── head.php
+├── public/                # Directorio público (document root)
+│   ├── index.php         # Punto de entrada
+│   ├── .htaccess         # Configuración de rewrite
+│   ├── css/              # Archivos CSS
+│   ├── js/               # Archivos JavaScript
+│   └── img/              # Imágenes
+└── .htaccess             # Bloqueo de acceso directo</code></pre>
+
+<h2 id="enrutamiento">Enrutamiento</h2>
+
+<h3>Formato de URLs</h3>
+<pre><code>http://localhost/MVC-2024/[controlador]/[accion]/[parametro1]/[parametro2]</code></pre>
+
+<h3>Ejemplos de Enrutamiento</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Controlador</th>
+<th>Método</th>
+<th>Parámetros</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/</td>
+<td>HomeController</td>
+<td>actionIndex</td>
+<td>-</td>
+</tr>
+<tr>
+<td>/home</td>
+<td>HomeController</td>
+<td>actionIndex</td>
+<td>-</td>
+</tr>
+<tr>
+<td>/home/inicio</td>
+<td>HomeController</td>
+<td>actionInicio</td>
+<td>-</td>
+</tr>
+<tr>
+<td>/user/profile/123</td>
+<td>UserController</td>
+<td>actionProfile</td>
+<td>[123]</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Controlador y Acción por Defecto</h3>
+<ul>
+<li><strong>Controlador por defecto</strong>: <code>HomeController</code></li>
+<li><strong>Acción por defecto</strong>: <code>actionIndex</code></li>
+<li><strong>Error 404</strong>: Se ejecuta <code>action404()</code> automáticamente</li>
+</ul>
+
+<h3>Configuración de Rewrite</h3>
+<p>El archivo <code>public/.htaccess</code> contiene:</p>
+<pre><code>&lt;IfModule mod_rewrite.c&gt;
+  Options -Multiviews
+  RewriteEngine On
+  RewriteBase /MVC-2024
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+&lt;/IfModule&gt;</code></pre>
+
+<h2 id="controladores">Controladores</h2>
+
+<h3>Estructura Básica</h3>
+<pre><code>&lt;?php 
+namespace app\controllers;
+use \Controller;
+use \Response;
+
+class MiController extends Controller
+{
+    public function __construct()
+    {
+        // Inicialización del controlador
+    }
+
+    public function actionIndex()
+    {
+        // Acción por defecto
+    }
+
+    public function actionMiAccion($param1 = null, $param2 = null)
+    {
+        // Lógica de la acción
+        $data = ['mensaje' => 'Hola Mundo'];
+        
+        Response::render($this->viewDir(__NAMESPACE__), "mi_vista", [
+            "title" => "Mi Página",
+            "head" => SiteController::head(),
+            "data" => $data
+        ]);
+    }
+
+    public function action404()
+    {
+        // Manejo personalizado de errores 404
+        Response::render($this->viewDir(__NAMESPACE__), "404", [
+            "title" => "Página no encontrada",
+            "head" => SiteController::head()
+        ]);
+    }
+
+    private function actionMetodoPrivado()
+    {
+        // Los métodos privados NO son accesibles vía URL
+    }
+}</code></pre>
+
+<h3>Métodos Importantes</h3>
+
+<h4><code>viewDir(__NAMESPACE__)</code></h4>
+<p>Convierte el namespace del controlador en la ruta de directorio de vistas:</p>
+<pre><code>// app\controllers\UserController -> user/
+$viewDir = $this->viewDir(__NAMESPACE__);</code></pre>
+
+<h4><code>static::path()</code></h4>
+<p>Obtiene la ruta base para assets:</p>
+<pre><code>$basePath = static::path(); // "/MVC-2024/"</code></pre>
+
+<h4><code>generarToken($longitud)</code></h4>
+<p>Genera tokens seguros para CSRF:</p>
+<pre><code>$token = static::generarToken(32);</code></pre>
+
+<h3>Convenciones</h3>
+<ol>
+<li><strong>Nombres</strong>: <code>{Nombre}Controller.php</code></li>
+<li><strong>Namespace</strong>: <code>app\controllers</code></li>
+<li><strong>Acciones</strong>: Métodos públicos con prefijo <code>action</code></li>
+<li><strong>Parámetros</strong>: Se pasan como argumentos del método</li>
+</ol>
+
+<h2 id="modelos">Modelos</h2>
+
+<h3>Estructura Básica</h3>
+<pre><code>&lt;?php
+namespace app\models;
+use \Model;
+
+class UserModel extends Model
+{
+    protected $table = "users";
+    protected $primaryKey = "id";
+
+    // Propiedades que corresponden a campos de la tabla
+    public $id;
+    public $nombre;
+    public $email;
+    public $created_at;
+
+    public function __construct()
+    {
+        // Inicialización del modelo
+    }
+
+    // Métodos personalizados
+    public function buscarPorEmail($email)
+    {
+        $sql = "SELECT * FROM {$this->table} WHERE email = :email";
+        $params = ["email" => $email];
+        return DataBase::getRecord($sql, $params);
+    }
+
+    public static function usuariosActivos()
+    {
+        $sql = "SELECT * FROM users WHERE status = 'active'";
+        return DataBase::getRecords($sql);
+    }
+}</code></pre>
+
+<h3>Métodos Heredados de Model</h3>
+
+<h4><code>findId($id)</code></h4>
+<p>Busca un registro por ID:</p>
+<pre><code>$user = UserModel::findId(1);
+echo $user->nombre;</code></pre>
+
+<h4><code>getAll()</code></h4>
+<p>Obtiene todos los registros:</p>
+<pre><code>$users = UserModel::getAll();
+foreach($users as $user) {
+    echo $user->nombre;
+}</code></pre>
+
+<h4><code>getColumnsNames($table)</code></h4>
+<p>Obtiene nombres de columnas:</p>
+<pre><code>$columns = UserModel::getColumnsNames('users');</code></pre>
+
+<h3>Uso en Controladores</h3>
+<pre><code>public function actionListar()
+{
+    $userModel = new UserModel();
+    $users = $userModel->getAll();
+    
+    Response::render($this->viewDir(__NAMESPACE__), "listar", [
+        "title" => "Lista de Usuarios",
+        "head" => SiteController::head(),
+        "users" => $users
+    ]);
+}</code></pre>
+
+<h2 id="vistas">Vistas</h2>
+
+<h3>Sistema de Renderizado</h3>
+<p>Las vistas se renderizan usando <code>Response::render()</code>:</p>
+<pre><code>Response::render($viewDir, $viewName, $variables);</code></pre>
+
+<h3>Estructura de una Vista</h3>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;?=$head?&gt;
+    &lt;title&gt;&lt;?=$title?&gt;&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Bienvenido &lt;?=$nombre?&gt;&lt;/h1&gt;
+    &lt;p&gt;&lt;?=$mensaje?&gt;&lt;/p&gt;
+    
+    &lt;?php if(isset($users)): ?&gt;
+        &lt;ul&gt;
+        &lt;?php foreach($users as $user): ?&gt;
+            &lt;li&gt;&lt;?=$user-&gt;nombre?&gt; - &lt;?=$user-&gt;email?&gt;&lt;/li&gt;
+        &lt;?php endforeach; ?&gt;
+        &lt;/ul&gt;
+    &lt;?php endif; ?&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h3>Variables Disponibles</h3>
+<p>Las variables pasadas a <code>Response::render()</code> están disponibles directamente:</p>
+<pre><code>// En el controlador
+Response::render($viewDir, "vista", [
+    "title" => "Mi Título",
+    "usuario" => $usuarioObj,
+    "lista" => $arrayDatos
+]);
+
+// En la vista
+echo $title;        // "Mi Título"
+echo $usuario->nombre;
+print_r($lista);</code></pre>
+
+<h3>Head Común</h3>
+<p>El framework incluye un sistema para manejar el <code>&lt;head&gt;</code> común:</p>
+<pre><code>// En SiteController::head()
+$head = SiteController::head();
+
+// El archivo app/views/inc/head.php contiene:
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+&lt;link rel="stylesheet" href="#PATH#css/main.css"&gt;
+&lt;script src="#PATH#js/jquery.js"&gt;&lt;/script&gt;</code></pre>
+
+<p>El placeholder <code>#PATH#</code> se reemplaza automáticamente con la ruta base.</p>
+
+<h3>Organización de Vistas</h3>
+<pre><code>app/views/
+├── controlador1/
+│   ├── accion1.php
+│   ├── accion2.php
+│   └── 404.php
+├── controlador2/
+│   └── index.php
+└── inc/
+    ├── head.php
+    ├── header.php
+    └── footer.php</code></pre>
+
+<h2 id="base-de-datos">Base de Datos</h2>
+
+<h3>Configuración</h3>
+<pre><code>// En app/core/DataBase.php
+private static $host = "localhost";
+private static $dbname = "mi_base_datos";
+private static $dbuser = "root";
+private static $dbpass = "";</code></pre>
+
+<h3>Métodos Disponibles</h3>
+
+<h4><code>query($sql, $params)</code></h4>
+<p>Ejecuta consultas SELECT:</p>
+<pre><code>$sql = "SELECT * FROM users WHERE age > :age";
+$params = ["age" => 18];
+$users = DataBase::query($sql, $params);</code></pre>
+
+<h4><code>execute($sql, $params)</code></h4>
+<p>Ejecuta INSERT, UPDATE, DELETE:</p>
+<pre><code>$sql = "INSERT INTO users (nombre, email) VALUES (:nombre, :email)";
+$params = ["nombre" => "Juan", "email" => "juan@email.com"];
+$affected = DataBase::execute($sql, $params);</code></pre>
+
+<h4><code>getRecord($sql, $params)</code></h4>
+<p>Obtiene un solo registro:</p>
+<pre><code>$sql = "SELECT * FROM users WHERE id = :id";
+$params = ["id" => 1];
+$user = DataBase::getRecord($sql, $params);</code></pre>
+
+<h4><code>getRecords($sql, $params)</code></h4>
+<p>Obtiene múltiples registros:</p>
+<pre><code>$sql = "SELECT * FROM users WHERE status = :status";
+$params = ["status" => "active"];
+$users = DataBase::getRecords($sql, $params);</code></pre>
+
+<h3>Prepared Statements</h3>
+<p>Todas las consultas usan prepared statements automáticamente:</p>
+<pre><code>// CORRECTO - Parámetros seguros
+$sql = "SELECT * FROM users WHERE email = :email";
+$params = ["email" => $_POST['email']];
+
+// INCORRECTO - Vulnerable a SQL injection
+$sql = "SELECT * FROM users WHERE email = '" . $_POST['email'] . "'";</code></pre>
+
+<h2 id="seguridad">Seguridad</h2>
+
+<h3>Tokens CSRF</h3>
+<pre><code>// Generar token
+$token = Controller::generarToken(32);
+$_SESSION['csrf_token'] = $token;
+
+// Verificar token
+if($_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    throw new Exception("Token CSRF inválido");
+}</code></pre>
+
+<h3>Prepared Statements</h3>
+<p>Todas las consultas a la base de datos usan prepared statements:</p>
+<pre><code>// Automático en DataBase
+$sql = "SELECT * FROM users WHERE id = :id";
+$params = ["id" => $userId];
+$user = DataBase::getRecord($sql, $params);</code></pre>
+
+<h3>Sanitización de URLs</h3>
+<p>El enrutamiento sanitiza automáticamente las URLs:</p>
+<pre><code>// En App::parseUrl()
+return explode("/", filter_var(rtrim($_GET["url"], "/"), FILTER_SANITIZE_URL));</code></pre>
+
+<h3>Protección de Directorios</h3>
+<p>Los archivos <code>.htaccess</code> protegen directorios sensibles:</p>
+<pre><code># En app/.htaccess
+Options - Indexes</code></pre>
+
+<h2 id="ejemplos-prácticos">Ejemplos Prácticos</h2>
+
+<h3>Ejemplo 1: CRUD de Usuarios</h3>
+
+<h4>Controlador</h4>
+<pre><code>&lt;?php
+namespace app\controllers;
+use \Controller;
+use \Response;
+use app\models\UserModel;
+
+class UserController extends Controller
+{
+    public function actionIndex()
+    {
+        $users = UserModel::getAll();
+        
+        Response::render($this->viewDir(__NAMESPACE__), "index", [
+            "title" => "Lista de Usuarios",
+            "head" => SiteController::head(),
+            "users" => $users
+        ]);
+    }
+
+    public function actionVer($id)
+    {
+        $user = UserModel::findId($id);
+        
+        if(!$user->id) {
+            $this->action404();
+            return;
+        }
+        
+        Response::render($this->viewDir(__NAMESPACE__), "ver", [
+            "title" => "Usuario: " . $user->nombre,
+            "head" => SiteController::head(),
+            "user" => $user
+        ]);
+    }
+
+    public function actionCrear()
+    {
+        if($_POST) {
+            $userModel = new UserModel();
+            $sql = "INSERT INTO users (nombre, email) VALUES (:nombre, :email)";
+            $params = [
+                "nombre" => $_POST['nombre'],
+                "email" => $_POST['email']
+            ];
+            
+            if(DataBase::execute($sql, $params)) {
+                header("Location: " . static::path() . "user");
+                return;
+            }
+        }
+        
+        Response::render($this->viewDir(__NAMESPACE__), "crear", [
+            "title" => "Crear Usuario",
+            "head" => SiteController::head(),
+            "token" => static::generarToken()
+        ]);
+    }
+}</code></pre>
+
+<h2 id="mejores-prácticas">Mejores Prácticas</h2>
+
+<h3>Estructura de Código</h3>
+<ol>
+<li><strong>Controladores</strong>: Solo lógica de presentación</li>
+<li><strong>Modelos</strong>: Lógica de negocio y acceso a datos</li>
+<li><strong>Vistas</strong>: Solo presentación, sin lógica compleja</li>
+<li><strong>Validación</strong>: Siempre validar datos de entrada</li>
+<li><strong>Seguridad</strong>: Usar tokens CSRF y prepared statements</li>
+</ol>
+
+<h3>Convenciones de Nomenclatura</h3>
+<pre><code>// Controladores
+class UserController extends Controller {}
+
+// Métodos de acción
+public function actionListar() {}
+public function actionCrear() {}
+
+// Modelos
+class UserModel extends Model {}
+
+// Vistas
+user/listar.php
+user/crear.php</code></pre>
+
+<h3>Manejo de Errores</h3>
+<pre><code>// En controladores
+if(!$data) {
+    $this->action404();
+    return;
+}
+
+// En modelos
+try {
+    $result = DataBase::execute($sql, $params);
+} catch(Exception $e) {
+    error_log($e->getMessage());
+    return false;
+}</code></pre>
+
+<h2 id="resolución-de-problemas">Resolución de Problemas</h2>
+
+<h3>Error 500 - Internal Server Error</h3>
+<div class="warning">
+<strong>Causa:</strong> mod_rewrite no habilitado<br>
+<strong>Solución:</strong> Habilitar mod_rewrite en Apache
+</div>
+
+<h3>Error 404 en todas las rutas</h3>
+<div class="warning">
+<strong>Causa:</strong> .htaccess no funciona<br>
+<strong>Solución:</strong> Verificar AllowOverride All en httpd.conf
+</div>
+
+<h3>Clases no encontradas</h3>
+<div class="warning">
+<strong>Causa:</strong> Namespace incorrecto<br>
+<strong>Solución:</strong> Verificar namespace en controladores y modelos
+</div>
+
+<h3>Variables no definidas en vistas</h3>
+<div class="warning">
+<strong>Causa:</strong> Variables no pasadas en Response::render()<br>
+<strong>Solución:</strong> Verificar array de variables en el controlador
+</div>
+
+<h3>Error de conexión a base de datos</h3>
+<div class="warning">
+<strong>Causa:</strong> Configuración incorrecta en DataBase.php<br>
+<strong>Solución:</strong> Verificar credenciales y nombre de base de datos
+</div>
+
+<h3>CSS/JS no cargan</h3>
+<div class="warning">
+<strong>Causa:</strong> Rutas incorrectas<br>
+<strong>Solución:</strong> Verificar uso de #PATH# en head.php
+</div>
+
+<hr>
+
+<h2>Conclusión</h2>
+
+<p>El framework MVC-2024 proporciona una base sólida para desarrollar aplicaciones web PHP siguiendo el patrón MVC. Su diseño simple pero potente permite un desarrollo rápido mientras mantiene la organización y seguridad del código.</p>
+
+<p>Para más información o reportar problemas, consulta la documentación en el repositorio del proyecto.</p>
+
+<hr>
+
+<p><em>Manual actualizado: Octubre 2025</em></p>
+
+</body>
+</html>

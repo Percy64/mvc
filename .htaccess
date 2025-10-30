@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Permitir acceso directo a archivos estáticos (CSS, JS, imágenes)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^(assets)/ - [L]
+
+# Redirigir todo lo demás al index.php con parámetro url
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
