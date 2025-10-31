@@ -16,8 +16,23 @@
                     </div>
                     
                     <?php 
-                    // URL del perfil de la mascota con base dinámica
-                    $perfilUrl = 'http://' . $_SERVER['HTTP_HOST'] . Controller::path() . 'mascota/perfil?id=' . urlencode($mascota['id_mascota']);
+                    // Construir URL usando dominio configurado (producción) con fallback a entorno
+                    $config = [];
+                    $configPath = __DIR__ . '/../../config/app.php'; // app/views/mascotas -> app/config
+                    if (file_exists($configPath)) {
+                        $cfg = require $configPath; // Debe devolver array
+                        if (is_array($cfg)) { $config = $cfg; }
+                    }
+
+                    $defaultDomain = 'botipet.liveblog365.com';
+                    $domain = getenv('APP_DOMAIN') ?: ($config['domain'] ?? ($_SERVER['HTTP_HOST'] ?? $defaultDomain));
+                    $scheme = getenv('APP_SCHEME') ?: ($config['scheme'] ?? (
+                        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https'
+                    ));
+
+                    $base = Controller::path();
+                    $base = rtrim($base, '/');
+                    $perfilUrl = $scheme . '://' . $domain . $base . '/mascota/qrinfo?id=' . urlencode($mascota['id_mascota']);
                     
                     // Generar QR usando una API pública
                     $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($perfilUrl);
@@ -32,9 +47,16 @@
                     
                     <div class="mb-3">
                         <p class="small text-muted">
-                            Escanea este código QR para ver el perfil de <?= htmlspecialchars($mascota['nombre']) ?>
+                            Escanea este código QR para ver la información de contacto de <?= htmlspecialchars($mascota['nombre']) ?>
                         </p>
-                        <code class="small"><?= htmlspecialchars($perfilUrl) ?></code>
+                        <div class="bg-light rounded p-2 mb-2">
+                            <small class="text-muted d-block">Dominio:</small>
+                            <code class="small"><?= htmlspecialchars($domain) ?></code>
+                        </div>
+                        <div class="bg-light rounded p-2">
+                            <small class="text-muted d-block">URL completa:</small>
+                            <code class="small"><?= htmlspecialchars($perfilUrl) ?></code>
+                        </div>
                     </div>
                     
                     <div class="d-grid gap-2">
@@ -57,7 +79,7 @@
                     <ul class="small">
                         <li>Imprime el código y pégalo en la correa o collar de tu mascota</li>
                         <li>Si alguien encuentra a tu mascota, puede escanear el código</li>
-                        <li>El código llevará directamente al perfil con tu información de contacto</li>
+                        <li>El código mostrará solo la información de contacto necesaria</li>
                         <li>Asegúrate de mantener actualizada la información en el perfil</li>
                     </ul>
                 </div>

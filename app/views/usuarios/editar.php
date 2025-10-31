@@ -34,17 +34,21 @@
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                         <input type="hidden" name="id" value="<?= htmlspecialchars($usuario['id'] ?? '') ?>">
                         
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="nombre" class="form-label">Nombre</label>
+                                    <label for="nombre" class="form-label">
+                                        Nombre <span class="text-danger">*</span>
+                                    </label>
                                     <input type="text" class="form-control" id="nombre" name="nombre" required 
                                            value="<?= htmlspecialchars($usuario['nombre'] ?? '') ?>">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="apellido" class="form-label">Apellido</label>
+                                    <label for="apellido" class="form-label">
+                                        Apellido <span class="text-danger">*</span>
+                                    </label>
                                     <input type="text" class="form-control" id="apellido" name="apellido" required 
                                            value="<?= htmlspecialchars($usuario['apellido'] ?? '') ?>">
                                 </div>
@@ -52,15 +56,39 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">
+                                Email <span class="text-danger">*</span>
+                            </label>
                             <input type="email" class="form-control" id="email" name="email" required 
                                    value="<?= htmlspecialchars($usuario['email'] ?? '') ?>">
                         </div>
                         
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="telefono" class="form-label">
+                                        Teléfono <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" required
+                                           value="<?= htmlspecialchars($usuario['telefono'] ?? '') ?>"
+                                           placeholder="Ej: 341-1234567">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="password" name="password">
+                                    <div class="form-text">Deja en blanco si no quieres cambiar la contraseña</div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
-                            <label for="password" class="form-label">Nueva Contraseña</label>
-                            <input type="password" class="form-control" id="password" name="password">
-                            <div class="form-text">Deja en blanco si no quieres cambiar la contraseña</div>
+                            <label for="direccion" class="form-label">
+                                Dirección <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="direccion" name="direccion" rows="2" required 
+                                      placeholder="Calle, número, barrio, ciudad"><?= htmlspecialchars($usuario['direccion'] ?? '') ?></textarea>
                         </div>
 
                         <div class="mb-3">
@@ -79,9 +107,11 @@
                                         if (strpos($p, 'public/assets/') === 0) {
                                             $foto = $BASE . substr($p, strlen('public/'));
                                         } elseif (strpos($p, 'assets/usuarios/') === 0) {
-                                            $foto = $BASE . $p;
+                                            $foto = $BASE . 'public/' . $p; // Corregido como en perfil
                                         } elseif (strpos($foto, '/assets/usuarios/') === 0) {
-                                            $foto = $BASE . ltrim($foto, '/');
+                                            $foto = $BASE . 'public' . $foto; // Corregido como en perfil
+                                        } elseif (strpos($p, 'assets/images/usuarios/') === 0) {
+                                            $foto = $ROOT . $p;
                                         } elseif (strpos($p, 'assets/') === 0) {
                                             $foto = $ROOT . $p;
                                         } else {

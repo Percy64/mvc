@@ -4,10 +4,12 @@
  */
 class DataBase
 {
+    // Valores por defecto (desarrollo local)
     private static $host = "localhost";
     private static $dbname = "mascotas_db";
     private static $dbuser = "root";
     private static $dbpass = "";
+    private static $port = 3306;
 
     private static $dbh = null; // Database handler
     private static $error;
@@ -16,15 +18,41 @@ class DataBase
     private static function connection()
     {
         if (self::$dbh === null) {
-            $dsn = "mysql:host=" . self::$host . ";dbname=" . self::$dbname;
+            // 1) Cargar configuración desde app/config/db.php si existe
+            $configPath = __DIR__ . '/../config/db.php';
+            if (file_exists($configPath)) {
+                $cfg = require $configPath; // Debe devolver un array
+                if (is_array($cfg)) {
+                    self::$host = $cfg['host'] ?? self::$host;
+                    self::$dbname = $cfg['name'] ?? self::$dbname;
+                    self::$dbuser = $cfg['user'] ?? self::$dbuser;
+                    self::$dbpass = $cfg['pass'] ?? self::$dbpass;
+                    self::$port = isset($cfg['port']) ? intval($cfg['port']) : self::$port;
+                }
+            }
+
+            // 2) Variables de entorno (tienen prioridad)
+            self::$host = getenv('DB_HOST') ?: self::$host;
+            self::$dbname = getenv('DB_NAME') ?: self::$dbname;
+            self::$dbuser = getenv('DB_USER') ?: self::$dbuser;
+            self::$dbpass = getenv('DB_PASS') ?: self::$dbpass;
+            $envPort = getenv('DB_PORT');
+            if ($envPort !== false && $envPort !== '') {
+                self::$port = intval($envPort);
+            }
+
+            $dsn = "mysql:host=" . self::$host . ";port=" . self::$port . ";dbname=" . self::$dbname . ";charset=utf8mb4";
             $opciones = [
-                PDO::ATTR_PERSISTENT => true,
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                // Algunos hostings gratuitos rechazan conexiones persistentes
+                PDO::ATTR_PERSISTENT => false,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_TIMEOUT => 5,
             ];
 
             try {
                 self::$dbh = new PDO($dsn, self::$dbuser, self::$dbpass, $opciones);
-                self::$dbh->exec('SET NAMES utf8');
+                self::$dbh->exec('SET NAMES utf8mb4');
                 self::$dbh->exec('SET time_zone = "-03:00";');
             } catch (PDOException $e) {
                 self::$error = $e->getMessage();

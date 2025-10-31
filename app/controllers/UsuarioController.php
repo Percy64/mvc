@@ -132,7 +132,9 @@ class UsuarioController extends Controller {
         Response::render($this->viewsDir, 'perfil', [
             'usuario' => $usuario,
             'mascotas' => $mascotas,
-            'is_admin' => $this->isAdmin()
+            'is_admin' => $this->isAdmin(),
+            'layout' => 'main',
+            'title' => 'Mi Perfil · BOTI'
         ]);
     }
 

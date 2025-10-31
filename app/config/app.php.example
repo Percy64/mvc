@@ -1,0 +1,6 @@
+<?php
+// Copiar como app.php y ajustar a tu entorno de producción
+return [
+    'domain' => 'botipet.liveblog365.com', // Dominio público donde está desplegado el sitio
+    'scheme' => 'https',                   // http o https
+];

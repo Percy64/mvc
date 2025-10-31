@@ -37,7 +37,16 @@ class Mascota extends Model {
         $this->especie = array_key_exists('especie', $data) ? $data['especie'] : $this->especie;
         $this->raza = array_key_exists('raza', $data) ? $data['raza'] : $this->raza;
         $this->edad = array_key_exists('edad', $data) ? $data['edad'] : $this->edad;
-        $this->descripcion = array_key_exists('descripcion', $data) ? $data['descripcion'] : $this->descripcion;
+        // Normalizar descripción: recortar y limitar a 255 caracteres
+        if (array_key_exists('descripcion', $data)) {
+            $desc = is_string($data['descripcion']) ? trim($data['descripcion']) : '';
+            if (function_exists('mb_substr')) {
+                $desc = mb_substr($desc, 0, 255, 'UTF-8');
+            } else {
+                $desc = substr($desc, 0, 255);
+            }
+            $this->descripcion = $desc;
+        }
         $this->foto_url = array_key_exists('foto_url', $data) ? $data['foto_url'] : $this->foto_url;
         $this->fecha_registro = array_key_exists('fecha_registro', $data) ? $data['fecha_registro'] : $this->fecha_registro;
         // En BASE.sql el dueño se almacena en la columna `id`. Usar usuario_id si viene,
@@ -113,7 +122,8 @@ class Mascota extends Model {
         $edadVal = (isset($this->edad) && $this->edad !== '' && $this->edad !== null) ? $this->edad : null;
         if ($this->id_mascota) {
             // Actualizar
-            $sql = "UPDATE mascotas SET nombre = ?, especie = ?, raza = ?, edad = ?, sexo = ?, color = ?, foto_url = ? WHERE id_mascota = ?";
+            $sql = "UPDATE mascotas SET nombre = ?, especie = ?, raza = ?, edad = ?, sexo = ?, color = ?, descripcion = ?, foto_url = ? WHERE id_mascota = ?";
+            $descVal = ($this->descripcion !== null && $this->descripcion !== '') ? $this->descripcion : null;
             $params = [
                 $this->nombre,
                 $this->especie,
@@ -121,13 +131,15 @@ class Mascota extends Model {
                 $edadVal,
                 $this->sexo,
                 $this->color,
+                $descVal,
                 $this->foto_url,
                 $this->id_mascota
             ];
             return DataBase::execute($sql, $params) > 0;
         } else {
             // Insertar (mapear usuario_id a columna `id`)
-            $sql = "INSERT INTO mascotas (nombre, especie, raza, edad, sexo, color, id, foto_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO mascotas (nombre, especie, raza, edad, sexo, color, descripcion, id, foto_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $descVal = ($this->descripcion !== null && $this->descripcion !== '') ? $this->descripcion : null;
             $params = [
                 $this->nombre,
                 $this->especie,
@@ -135,6 +147,7 @@ class Mascota extends Model {
                 $edadVal,
                 $this->sexo,
                 $this->color,
+                $descVal,
                 $this->usuario_id,
                 $this->foto_url
             ];
@@ -196,5 +209,98 @@ class Mascota extends Model {
             'sexo' => $this->sexo,
             'color' => $this->color
         ];
+    }
+    
+    /**
+     * Marcar mascota como perdida o encontrada
+     */
+    public static function marcarComoPerdida($id, $perdida = true) {
+        $sql = "UPDATE mascotas SET perdido = ? WHERE id_mascota = ?";
+        return DataBase::execute($sql, [$perdida ? 1 : 0, $id]) > 0;
+    }
+    
+    /**
+     * Verificar si una mascota está perdida
+     */
+    public static function estaPerdida($id) {
+        $sql = "SELECT perdido FROM mascotas WHERE id_mascota = ?";
+        $result = DataBase::getRecord($sql, [$id]);
+        return $result ? (bool)$result['perdido'] : false;
+    }
+    
+    /**
+     * Obtener todas las mascotas perdidas
+     */
+    public static function getMascotasPerdidas($limit = null) {
+        $sql = "SELECT * FROM mascotas WHERE perdido = 1 ORDER BY id_mascota DESC";
+        if ($limit) {
+            $sql .= " LIMIT " . intval($limit);
+        }
+        return DataBase::getRecords($sql);
+    }
+
+    /**
+     * Agregar una foto a la galería de una mascota
+     */
+    public static function addGalleryPhoto($id_mascota, $url, $descripcion = null) {
+        // Crear tabla si no existe (defensivo)
+        $create = "CREATE TABLE IF NOT EXISTS fotos_mascotas (
+            id_foto INT AUTO_INCREMENT PRIMARY KEY,
+            id_mascota INT NOT NULL,
+            url VARCHAR(255) NOT NULL,
+            descripcion VARCHAR(255) NULL,
+            fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT fk_fotos_mascotas_mascota FOREIGN KEY (id_mascota) REFERENCES mascotas(id_mascota) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        try { DataBase::execute($create); } catch (\Throwable $e) { /* ignore */ }
+
+        $sql = "INSERT INTO fotos_mascotas (id_mascota, url, descripcion) VALUES (?, ?, ?)";
+        $descVal = ($descripcion !== null && $descripcion !== '') ? $descripcion : null;
+        return DataBase::execute($sql, [$id_mascota, $url, $descVal]) > 0;
+    }
+    
+    /**
+     * Registrar reporte de mascota encontrada por otro usuario
+     */
+    public static function registrarReporteEncontrada($id_mascota, $usuario_reporta = null) {
+        // Crear tabla de reportes si no existe
+        $createTable = "CREATE TABLE IF NOT EXISTS reportes_encontradas (
+            id_reporte INT AUTO_INCREMENT PRIMARY KEY,
+            id_mascota INT NOT NULL,
+            usuario_reporta INT NULL,
+            fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ip_reporte VARCHAR(45),
+            procesado BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (id_mascota) REFERENCES mascotas(id_mascota) ON DELETE CASCADE,
+            FOREIGN KEY (usuario_reporta) REFERENCES usuarios(id) ON DELETE SET NULL
+        )";
+        
+        try {
+            DataBase::execute($createTable);
+        } catch (\Exception $e) {
+            // La tabla ya existe o hay otro error, continuar
+        }
+        
+        // Insertar el reporte
+        $sql = "INSERT INTO reportes_encontradas (id_mascota, usuario_reporta, ip_reporte) VALUES (?, ?, ?)";
+        $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $result = DataBase::execute($sql, [$id_mascota, $usuario_reporta, $ip]);
+        
+        if ($result > 0) {
+            return DataBase::obtenerUltimoId();
+        }
+        return false;
+    }
+    
+    /**
+     * Obtener reportes de mascotas encontradas
+     */
+    public static function getReportesEncontradas($id_mascota) {
+        $sql = "SELECT r.*, u.nombre, u.email 
+                FROM reportes_encontradas r 
+                LEFT JOIN usuarios u ON r.usuario_reporta = u.id 
+                WHERE r.id_mascota = ? 
+                ORDER BY r.fecha_reporte DESC";
+        return DataBase::getRecords($sql, [$id_mascota]);
     }
 }

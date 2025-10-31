@@ -1,0 +1,10 @@
+<?php
+// Copiar este archivo como db.php y completar con tus credenciales de MySQL
+return [
+    // En hosting: NO uses el host FTP (ftpupload.net). Usa el host MySQL que informa el panel (p.ej. sqlXXX.ezyro.com)
+    'host' => 'localhost',
+    'port' => 3306,
+    'name' => 'mascotas_db',
+    'user' => 'root',
+    'pass' => '',
+];

@@ -13,6 +13,7 @@ $ROOT = \Controller::rootBase();
                 <p class="lead text-muted mb-4">Perfiles, fotos y códigos QR para que siempre estén identificadas y seguras.</p>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="<?= $BASE ?>mascota" class="btn btn-primary btn-lg">Explorar mascotas</a>
+                    <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-warning btn-lg">Mascotas perdidas</a>
                     <?php if (isset($session) && $session->estaLogueado()): ?>
                         <a href="<?= $BASE ?>mascota/crear" class="btn btn-outline-primary btn-lg">Registrar mi mascota</a>
                     <?php else: ?>
@@ -80,14 +81,14 @@ $ROOT = \Controller::rootBase();
     </div>
 </section>
 
-<!-- Mascotas: tarjetas generadas desde la tabla `mascotas` -->
+<!-- Mascotas perdidas: tarjetas generadas desde la tabla `mascotas` -->
 <div class="container mt-5">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">Mascotas destacadas</h2>
-        <a href="<?= $BASE ?>mascota" class="btn btn-outline-secondary btn-sm">Ver todas</a>
+        <h2 class="mb-0">Mascotas perdidas</h2>
+        <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-warning btn-sm">Ver todas</a>
     </div>
     <?php if (empty($mascotas)): ?>
-        <div class="alert alert-info">No hay mascotas para mostrar en este momento. Asegúrate de que la tabla <code>mascotas</code> existe y contiene datos.</div>
+        <div class="alert alert-info">No hay mascotas reportadas como perdidas en este momento.</div>
     <?php else: ?>
         <div class="row">
             <?php foreach ($mascotas as $m): ?>
@@ -131,6 +132,9 @@ $ROOT = \Controller::rootBase();
                             <?php if (!empty($especie)): ?>
                                 <span class="badge bg-light text-dark position-absolute top-0 start-0 m-2"><?= htmlspecialchars($especie) ?></span>
                             <?php endif; ?>
+                            <?php if (isset($m['perdido']) && $m['perdido']): ?>
+                                <span class="badge bg-danger position-absolute top-0 end-0 m-2">PERDIDA</span>
+                            <?php endif; ?>
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title"><?= htmlspecialchars($nombre) ?></h5>
@@ -139,7 +143,7 @@ $ROOT = \Controller::rootBase();
                             <div class="mt-auto d-flex align-items-center gap-2">
                                 <a href="<?= $BASE ?>mascota/perfil?id=<?= urlencode($id) ?>" class="btn btn-sm btn-primary">Ver perfil</a>
                                 <?php if (isset($session) && $session->estaLogueado()): ?>
-                                    <a href="<?= $BASE ?>mascota/subir-foto?id_mascota=<?= urlencode($id) ?>" class="btn btn-sm btn-outline-secondary">Subir foto</a>
+                                    <a href="<?= $BASE ?>mascota/marcarperdida" class="btn btn-sm btn-outline-danger disabled" tabindex="-1" aria-disabled="true" title="Ya está marcada como perdida">Perdida</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -159,6 +163,7 @@ $ROOT = \Controller::rootBase();
             <?php if (isset($session) && $session->estaLogueado()): ?>
                 <a href="<?= $BASE ?>mascota/crear" class="btn btn-primary">Registrar mi mascota</a>
                 <a href="<?= $BASE ?>mascota" class="btn btn-outline-secondary">Ver mascotas</a>
+                <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-warning">Mascotas perdidas</a>
             <?php else: ?>
                 <a href="<?= $BASE ?>usuario/login" class="btn btn-primary">Iniciar sesión</a>
                 <a href="<?= $BASE ?>usuario/register" class="btn btn-success">Crear cuenta</a>

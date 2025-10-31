@@ -18,7 +18,7 @@ URLs follow the pattern: `/controller/action/param1/param2`
 - Default controller: `HomeController`
 - Default action: `actionIndex`
 - Missing controllers/actions redirect to `action404`
-- **Critical**: URL base is `/MVC-2024` in `.htaccess` but project folder is `MVC`
+- **Critical**: URL base is `/MVC/public/` in `.htaccess` (check current RewriteBase setting)
 
 Example: `/mascota/perfil/123` → `MascotaController->actionPerfil("123")`
 
@@ -29,10 +29,21 @@ Example: `/mascota/perfil/123` → `MascotaController->actionPerfil("123")`
 - **Models**: `{Name}.php` in `app/models/` namespace `app\models` extending base `Model`
 
 ## View Rendering Pattern
-Controllers must use this exact pattern:
+Controllers use two patterns for view rendering:
+
+**Pattern 1: Dynamic viewDir (recommended for consistency)**
 ```php
 $viewDir = $this->viewDir('app\\controllers\\');
 Response::render($viewDir, 'view_name', [
+    'mascotas' => $mascotas,
+    'session' => $this->session
+]);
+```
+
+**Pattern 2: Fixed viewsDir property (used in MascotaController, UsuarioController)**
+```php
+protected $viewsDir = 'mascotas/';  // Set in controller class
+Response::render($this->viewsDir, 'view_name', [
     'mascotas' => $mascotas,
     'session' => $this->session
 ]);
@@ -44,7 +55,7 @@ The `viewDir()` method strips namespace and "Controller" to get view directory p
 - Controllers call `static::path()` to set base URL in `self::$ruta`
 - `SiteController::head()` loads `app/views/inc/head.php` and replaces `#PATH#` placeholder
 - CSS/JS assets are in `public/css/` and `public/js/` directories
-- Use path replacement pattern: `#PATH#css/main.css` becomes `/MVC-2024/css/main.css`
+- Use path replacement pattern: `#PATH#css/main.css` becomes `/MVC/public/css/main.css`
 
 ## Database Configuration
 Database settings in `DataBase.php`:
@@ -81,7 +92,16 @@ public function __construct() {
 - **Environment**: XAMPP with Apache mod_rewrite enabled
 - **Document Root**: `public/` directory (assets served directly)
 - **Error Reporting**: Enabled in `public/index.php` for development
-- **URL Rewrite**: Base `/MVC-2024` in `public/.htaccess` but project folder is `MVC`
+- **URL Rewrite**: Base `/MVC/public/` in `public/.htaccess` (project folder is `mvc`)
+- **Test Environment**: `test.php` provides system status and routing tests
+- **Database Import**: Use `mascotas.sql` to set up the database structure
+
+## Development Workflow
+- **Starting Development**: Access via `http://localhost/MVC/public/` 
+- **Database Setup**: Import `mascotas.sql` into `mascotas_db` database
+- **File Organization**: Controllers in `app/controllers/`, models in `app/models/`, views in `app/views/`
+- **Asset Management**: Public assets (CSS/JS) in `public/`, uploaded files in `assets/`
+- **Debugging**: Error reporting enabled; check Apache error logs for routing issues
 
 ## Key Implementation Patterns
 1. **Controllers**: Must extend `Controller`, use namespace `app\controllers`, inject `$this->session`
@@ -92,7 +112,7 @@ public function __construct() {
 6. **404 Handling**: Automatic fallback to `action404` for missing routes
 
 ## Security & Validation
-- **CSRF**: Use `Controller::generarToken()` for form protection
+- **CSRF**: Use `$this->generateCsrf()` in controllers for form tokens, or `Controller::generarToken()` for custom security tokens
 - **Database**: All queries use PDO prepared statements
 - **View Variables**: Validated with regex before extraction in `Response::render()`
 - **Directory Protection**: `.htaccess` blocks direct access to `app/` directory

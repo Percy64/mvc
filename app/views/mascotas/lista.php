@@ -23,11 +23,25 @@
             <?php foreach ($mascotas as $mascota): ?>
                 <?php
                     $img = $mascota['foto_url'] ?? '';
-                    if (!empty($img) && strpos($img, 'http://') !== 0 && strpos($img, 'https://') !== 0 && strpos($img, '/') !== 0) {
-                        $img = '/' . ltrim($img, '/');
+                    if (!empty($img)) {
+                        $img = str_replace('\\', '/', $img);
+                        $lower = strtolower($img);
+                        $isAbs = (strpos($lower, 'http://') === 0) || (strpos($lower, 'https://') === 0) || (strpos($lower, 'data:') === 0);
+                        if (!$isAbs) {
+                            $p = ltrim($img, '/');
+                            if (strpos($p, 'public/assets/') === 0) {
+                                $img = $BASE . substr($p, strlen('public/'));
+                            } elseif (strpos($p, 'assets/mascotas/') === 0 || strpos($p, 'assets/images/mascotas/') === 0) {
+                                $img = $ROOT . $p;
+                            } elseif (strpos($img, '/assets/') === 0) {
+                                $img = $ROOT . ltrim($img, '/');
+                            } else {
+                                $img = $ROOT . $p;
+                            }
+                        }
                     }
                     if (empty($img)) {
-                        $img = '/assets/images/avatar-placeholder.svg';
+                        $img = $ROOT . 'assets/images/avatar-placeholder.svg';
                     }
                 ?>
                 <div class="col-md-4 col-lg-3 mb-4">
@@ -36,7 +50,7 @@
                             <img src="<?= htmlspecialchars($img) ?>" 
                                  class="card-img-top pet-img-uniform" 
                                  alt="<?= htmlspecialchars($mascota['nombre'] ?? 'Sin nombre') ?>"
-                                 onerror="this.src='/assets/images/avatar-placeholder.svg'">
+                                 onerror="this.src='<?= $ROOT ?>assets/images/avatar-placeholder.svg'">
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h6 class="card-title"><?= htmlspecialchars($mascota['nombre'] ?? 'Sin nombre') ?></h6>

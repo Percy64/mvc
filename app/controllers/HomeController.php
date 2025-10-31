@@ -17,10 +17,10 @@ class HomeController extends Controller {
      * Página de inicio
      */
     public function actionIndex($var = null) {
-        // Obtener mascotas destacadas
+        // Obtener mascotas perdidas para mostrar en inicio
         $mascotas = [];
         try {
-            $mascotas = \app\models\Mascota::getAllWithPhoto(6);
+            $mascotas = \app\models\Mascota::getMascotasPerdidas(12);
         } catch (\Throwable $e) {
             // Si hay error con la tabla de mascotas, continuar sin mascotas
             $mascotas = [];

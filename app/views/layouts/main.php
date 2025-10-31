@@ -27,23 +27,31 @@
                 <button class="btn btn-outline-secondary d-lg-none me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
                     <img src="<?= $ROOT ?>assets/images/menu.png" alt="" class="menu-icon">
                 </button>
-                <!-- Desktop dropdown -->
-                <div class="d-none d-lg-block dropdown">
-                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="menuLargeBtn" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="<?= $ROOT ?>assets/images/menu.png" alt="" class="menu-icon">
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="<?= $BASE ?>usuario/perfil">Perfil</a></li>
-                        <li><a class="dropdown-item" href="<?= $BASE ?>mascota">Mascotas</a></li>
-                        <li><a class="dropdown-item" href="<?= $BASE ?>usuario/lista">Lista Usuarios</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <?php if ($ses->estaLogueado()): ?>
-                        <li class="dropdown-item-text">Hola, <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="<?= $BASE ?>usuario/logout">Cerrar sesión</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
+                <?php $onMascotaPerfil = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/mascota/perfil') !== false; ?>
+                <?php if ($onMascotaPerfil): ?>
+                    <!-- En perfil de mascota: sin desplegable, links directos -->
+                    <div class="d-none d-lg-flex align-items-center gap-2">
+                        <a href="<?= $BASE ?>" class="btn btn-outline-secondary btn-sm">Inicio</a>
+                        <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-secondary btn-sm">Mascotas perdidas</a>
+                    </div>
+                <?php else: ?>
+                    <!-- Desktop dropdown (visible en el resto de páginas) -->
+                    <div class="d-none d-lg-block dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="menuLargeBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="<?= $ROOT ?>assets/images/menu.png" alt="" class="menu-icon">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="<?= $BASE ?>">Inicio</a></li>
+                            <li><a class="dropdown-item" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <?php if ($ses->estaLogueado()): ?>
+                            <li class="dropdown-item-text">Hola, <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="<?= $BASE ?>usuario/logout">Cerrar sesión</a></li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <!-- Mobile menu content -->
@@ -54,9 +62,8 @@
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/register">Registrarse</a></li>
                     <li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
                     <?php endif; ?>
-                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/perfil">Perfil</a></li>
-                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>mascota">Mascotas</a></li>
-                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/lista">Lista Usuarios</a></li>
+                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>">Inicio</a></li>
+                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
                     <?php if ($ses->estaLogueado()): ?>
                     <li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
                     <li class="nav-item d-lg-none"><a class="nav-link text-danger" href="<?= $BASE ?>usuario/logout">Cerrar sesión</a></li>
@@ -74,9 +81,11 @@
             <!-- Right actions -->
             <div class="nav-actions ms-auto d-none d-lg-flex align-items-center">
                 <?php if ($ses->estaLogueado()): ?>
-                    <a href="<?= $BASE ?>usuario/perfil" class="btn btn-outline-secondary me-2 btn-sm">Perfil</a>
+                    <?php $onPerfil = isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/usuario/perfil') !== false; ?>
+                    <?php if (!$onPerfil): ?>
+                        <a href="<?= $BASE ?>usuario/perfil" class="btn btn-outline-secondary me-2 btn-sm">Perfil</a>
+                    <?php endif; ?>
                     <span class="me-3">Hola, <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?></span>
-                    <a href="<?= $BASE ?>usuario/logout" class="btn btn-outline-danger btn-sm">Cerrar Sesión</a>
                 <?php else: ?>
                     <a href="<?= $BASE ?>usuario/login" class="btn btn-link">Iniciar sesión</a>
                     <a href="<?= $BASE ?>usuario/register" class="btn btn-primary">Registrarse</a>
@@ -99,7 +108,8 @@
             </div>
             <ul class="nav small">
                 <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE ?>">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE ?>mascota">Mascotas</a></li>
+                <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
+                <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE . ($ses->estaLogueado() ? 'usuario/perfil' : 'usuario/login') ?>">Mis Mascotas</a></li>
                 <?php if ($ses->estaLogueado()): ?>
                     <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE ?>usuario/panel">Panel</a></li>
                     <li class="nav-item"><a class="nav-link text-muted" href="<?= $BASE ?>usuario/logout">Salir</a></li>
