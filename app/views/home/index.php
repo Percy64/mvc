@@ -140,11 +140,8 @@ $ROOT = \Controller::rootBase();
                             <h5 class="card-title"><?= htmlspecialchars($nombre) ?></h5>
                             <p class="card-text text-muted mb-2"><?= htmlspecialchars($especie) ?><?php if ($edad) echo ' · ' . htmlspecialchars($edad); ?></p>
                             <p class="card-text small text-truncate"><?= htmlspecialchars($desc) ?></p>
-                            <div class="mt-auto d-flex align-items-center gap-2">
-                                <a href="<?= $BASE ?>mascota/perfil?id=<?= urlencode($id) ?>" class="btn btn-sm btn-primary">Ver perfil</a>
-                                <?php if (isset($session) && $session->estaLogueado()): ?>
-                                    <a href="<?= $BASE ?>mascota/marcarperdida" class="btn btn-sm btn-outline-danger disabled" tabindex="-1" aria-disabled="true" title="Ya está marcada como perdida">Perdida</a>
-                                <?php endif; ?>
+                            <div class="mt-auto text-center">
+                                <a href="<?= $BASE ?>mascota/qrinfo?id=<?= urlencode($id) ?>" class="btn btn-sm btn-primary">📞 Contactar dueño</a>
                             </div>
                         </div>
                     </div>

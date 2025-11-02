@@ -14,6 +14,15 @@
                             <span class="fs-2">👋</span> Registro de Usuario
                         </h3>
                         <p class="text-muted mb-0">Completa todos los datos para crear tu cuenta</p>
+                        <div class="alert alert-info border-0 mt-3 mb-0">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-5">📱</span>
+                                <div>
+                                    <strong>Verificación por WhatsApp</strong><br>
+                                    <small>Te enviaremos un código a tu número para verificar tu identidad</small>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body p-4">
                         <?php if (!empty($errores)): ?>
@@ -67,22 +76,27 @@
                                 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">
-                                        Email <span class="text-danger">*</span>
+                                        Email
                                     </label>
-                                    <input type="email" class="form-control" id="email" name="email" required 
+                                    <input type="email" class="form-control" id="email" name="email" 
                                            value="<?= htmlspecialchars($data['email'] ?? '') ?>"
-                                           placeholder="tu@email.com">
-                                    <div class="form-text">Será tu nombre de usuario para iniciar sesión</div>
+                                           placeholder="tu@email.com (opcional)">
+                                    <div class="form-text">Campo opcional - no es necesario para el registro</div>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="telefono" class="form-label">
-                                        Teléfono <span class="text-danger">*</span>
+                                        Teléfono / WhatsApp <span class="text-danger">*</span>
                                     </label>
                                     <input type="tel" class="form-control" id="telefono" name="telefono" required
                                            value="<?= htmlspecialchars($data['telefono'] ?? '') ?>"
-                                           placeholder="Ej: 341-1234567">
-                                    <div class="form-text">Incluye código de área sin el 0</div>
+                                           placeholder="Ej: +543411234567 o 3411234567">
+                                    <div class="form-text">
+                                        <span class="d-flex align-items-center gap-1">
+                                            <span class="fs-6">💬</span>
+                                            Número que usaremos para llamadas y WhatsApp
+                                        </span>
+                                    </div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -133,10 +147,42 @@
                                 </div>
                             </div>
                             
+                            <!-- Términos y Condiciones -->
+                            <div class="mb-4">
+                                <div class="card border-light bg-light">
+                                    <div class="card-body p-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="terminos" name="terminos" required>
+                                            <label class="form-check-label small" for="terminos">
+                                                <span class="fs-6">📋</span> 
+                                                Acepto los 
+                                                <a href="<?= Controller::path() ?>legal/terminos" target="_blank" class="text-decoration-none fw-bold">
+                                                    Términos y Condiciones
+                                                </a> 
+                                                y la
+                                                <a href="<?= Controller::path() ?>legal/privacidad" target="_blank" class="text-decoration-none fw-bold">
+                                                    Política de Privacidad
+                                                </a>
+                                                para el tratamiento de mis datos personales.
+                                            </label>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <span class="fs-6">🔒</span> 
+                                                <strong>Tu privacidad es importante:</strong> Solo usamos tu información para facilitar el contacto cuando tu mascota se pierda.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg">
-                                    <span class="fs-6">✨</span> Crear mi cuenta
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                    <span class="fs-6">📱</span> Enviar código de verificación
                                 </button>
+                                <small class="text-muted text-center mt-2">
+                                    Al continuar, recibirás un código por WhatsApp para verificar tu número
+                                </small>
                             </div>
                         </form>
                         
@@ -154,3 +200,39 @@
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const terminosCheckbox = document.getElementById('terminos');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Función para habilitar/deshabilitar botón
+    function toggleSubmitButton() {
+        if (terminosCheckbox.checked) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('btn-secondary');
+            submitBtn.classList.add('btn-primary');
+        } else {
+            submitBtn.disabled = true;
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-secondary');
+        }
+    }
+    
+    // Escuchar cambios en el checkbox
+    terminosCheckbox.addEventListener('change', toggleSubmitButton);
+    
+    // Estado inicial
+    toggleSubmitButton();
+    
+    // Validación adicional antes de enviar
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!terminosCheckbox.checked) {
+            e.preventDefault();
+            alert('📋 Debes aceptar los términos y condiciones para continuar.');
+            terminosCheckbox.focus();
+            return false;
+        }
+    });
+});
+</script>

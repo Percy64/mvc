@@ -16,19 +16,109 @@
                     </div>
                     
                     <?php 
-                    // Construir URL usando dominio configurado (producción) con fallback a entorno
-                    $config = [];
-                    $configPath = __DIR__ . '/../../config/app.php'; // app/views/mascotas -> app/config
-                    if (file_exists($configPath)) {
-                        $cfg = require $configPath; // Debe devolver array
-                        if (is_array($cfg)) { $config = $cfg; }
+                    // Obtener la IPv4 de la máquina local
+                    function obtenerIPv4Maquina() {
+                        $ipv4 = null;
+                        
+                        // Método 1: Obtener IP del servidor web si es válida
+                        $serverIP = $_SERVER['SERVER_ADDR'] ?? null;
+                        if ($serverIP && filter_var($serverIP, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $serverIP !== '127.0.0.1') {
+                            return $serverIP;
+                        }
+                        
+                        // Método 2: Obtener IPv4 directamente de la interfaz de red de la máquina
+                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                            // Windows: usar ipconfig para obtener IPv4 de la máquina
+                            $output = shell_exec('ipconfig 2>nul');
+                            if ($output) {
+                                // Buscar adaptadores activos con IPv4
+                                $lines = explode("\n", $output);
+                                $currentAdapter = '';
+                                $foundValidIP = false;
+                                
+                                foreach ($lines as $line) {
+                                    $line = trim($line);
+                                    
+                                    // Identificar adaptador
+                                    if (strpos($line, 'adaptador') !== false || strpos($line, 'adapter') !== false) {
+                                        $currentAdapter = $line;
+                                        continue;
+                                    }
+                                    
+                                    // Buscar IPv4
+                                    if (preg_match('/IPv4[^:]*:\s*(\d+\.\d+\.\d+\.\d+)/', $line, $matches)) {
+                                        $ip = $matches[1];
+                                        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $ip !== '127.0.0.1') {
+                                            // Priorizar redes privadas típicas
+                                            if (preg_match('/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/', $ip)) {
+                                                return $ip; // Retornar inmediatamente si es red privada
+                                            } elseif (!$ipv4) {
+                                                $ipv4 = $ip; // Guardar como opción si no hay mejor
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Método alternativo para Windows: usar wmic
+                            if (!$ipv4) {
+                                $output = shell_exec('wmic NetworkAdapter where "NetConnectionStatus=2" get NetConnectionID /format:list 2>nul');
+                                if ($output) {
+                                    $output = shell_exec('wmic NetworkAdapterConfiguration where "IPEnabled=true and DHCPEnabled=true" get IPAddress /format:list 2>nul');
+                                    if ($output && preg_match('/IPAddress=\{?"?([0-9.]+)/', $output, $matches)) {
+                                        $ip = $matches[1];
+                                        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $ip !== '127.0.0.1') {
+                                            $ipv4 = $ip;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Linux/Mac: obtener IPv4 de la máquina
+                            $commands = [
+                                // Obtener IP de la ruta por defecto (más confiable)
+                                "ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K[0-9.]+'",
+                                // Obtener todas las IPs y filtrar
+                                "hostname -I 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | grep -v '127.0.0.1' | head -1",
+                                // Método con ifconfig
+                                "ifconfig 2>/dev/null | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | head -1",
+                                // Método con ip addr
+                                "ip addr show 2>/dev/null | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d'/' -f1 | head -1"
+                            ];
+                            
+                            foreach ($commands as $cmd) {
+                                $output = shell_exec($cmd);
+                                if ($output) {
+                                    $ip = trim($output);
+                                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && $ip !== '127.0.0.1') {
+                                        $ipv4 = $ip;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Si no se encontró ninguna IP válida, usar localhost
+                        return $ipv4 ?: '127.0.0.1';
                     }
-
-                    $defaultDomain = 'botipet.liveblog365.com';
-                    $domain = getenv('APP_DOMAIN') ?: ($config['domain'] ?? ($_SERVER['HTTP_HOST'] ?? $defaultDomain));
-                    $scheme = getenv('APP_SCHEME') ?: ($config['scheme'] ?? (
-                        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'https'
-                    ));
+                    
+                    // Construir URL usando IPv4 de la máquina
+                    $currentIPv4 = obtenerIPv4Maquina();
+                    $port = $_SERVER['SERVER_PORT'] ?? '80';
+                    
+                    // Determinar esquema
+                    $scheme = 'http';
+                    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+                        $scheme = 'https';
+                    } elseif ($port === '443') {
+                        $scheme = 'https';
+                    }
+                    
+                    // Construir dominio con IPv4 y puerto si es necesario
+                    $domain = $currentIPv4;
+                    if (($scheme === 'http' && $port !== '80') || ($scheme === 'https' && $port !== '443')) {
+                        $domain .= ':' . $port;
+                    }
 
                     $base = Controller::path();
                     $base = rtrim($base, '/');
@@ -49,6 +139,10 @@
                         <p class="small text-muted">
                             Escanea este código QR para ver la información de contacto de <?= htmlspecialchars($mascota['nombre']) ?>
                         </p>
+                        <div class="bg-light rounded p-2 mb-2">
+                            <small class="text-muted d-block">IPv4 de la Máquina:</small>
+                            <code class="small"><?= htmlspecialchars($currentIPv4) ?></code>
+                        </div>
                         <div class="bg-light rounded p-2 mb-2">
                             <small class="text-muted d-block">Dominio:</small>
                             <code class="small"><?= htmlspecialchars($domain) ?></code>

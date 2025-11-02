@@ -82,17 +82,47 @@ class UsuarioController extends Controller {
             return;
         }
 
+        // Paso 1: Validar datos y enviar código de verificación por WhatsApp
         $usuario = new \app\models\Usuario();
         $errores = $usuario->validate($data);
+        
+        // Validar términos y condiciones
+        if (empty($data['terminos']) || $data['terminos'] !== 'on') {
+            $errores[] = 'Debes aceptar los términos y condiciones para continuar.';
+        }
 
         if (empty($errores)) {
-            $usuario->fill($data);
-            if ($usuario->save()) {
-                $this->session->iniciarSesion($usuario->toArray());
-                $this->redirect('/');
-                return;
+            // Verificar si el teléfono ya ha excedido intentos
+            if (\app\models\VerificacionWhatsApp::haExcedidoIntentos($data['telefono'])) {
+                $errores[] = 'Has excedido el máximo de intentos. Espera 10 minutos antes de intentar nuevamente.';
             } else {
-                $errores[] = 'Error al crear el usuario';
+                // Generar y enviar código
+                $codigo = \app\models\VerificacionWhatsApp::generarCodigo($data['telefono']);
+                
+                if ($codigo) {
+                    // Enviar código por WhatsApp
+                    $whatsappService = \app\services\WhatsAppService::create();
+                    $resultado = $whatsappService->enviarCodigoVerificacion($data['telefono'], $codigo);
+                    
+                    if ($resultado['success']) {
+                        // Guardar datos temporalmente en sesión
+                        $this->session->set('registro_temporal', $data);
+                        
+                        // Redirigir a verificación
+                        Response::render($this->viewsDir, 'verificar_whatsapp', [
+                            'telefono' => $data['telefono'],
+                            'mensaje_envio' => $resultado['message'],
+                            'csrf_token' => $this->generateCsrf(),
+                            'layout' => 'main',
+                            'title' => 'Verificar WhatsApp · BOTI'
+                        ]);
+                        return;
+                    } else {
+                        $errores[] = 'Error al enviar código de verificación: ' . $resultado['message'];
+                    }
+                } else {
+                    $errores[] = 'Error al generar código de verificación';
+                }
             }
         }
 
@@ -101,6 +131,108 @@ class UsuarioController extends Controller {
             'csrf_token' => $this->generateCsrf(),
             'data' => $data
         ]);
+    }
+
+    /**
+     * Verificar código de WhatsApp y completar registro
+     */
+    public function actionVerificarWhatsapp() {
+        $codigo = $this->input('codigo');
+        $csrf_token = $this->input('csrf_token');
+        
+        if (!$this->validateCsrf($csrf_token)) {
+            Response::render($this->viewsDir, 'verificar_whatsapp', [
+                'error' => 'Token de seguridad inválido',
+                'csrf_token' => $this->generateCsrf()
+            ]);
+            return;
+        }
+
+        // Obtener datos temporales del registro
+        $datosRegistro = $this->session->get('registro_temporal');
+        if (!$datosRegistro) {
+            $this->redirect('/usuario/register');
+            return;
+        }
+
+        if (empty($codigo)) {
+            Response::render($this->viewsDir, 'verificar_whatsapp', [
+                'error' => 'El código de verificación es obligatorio',
+                'telefono' => $datosRegistro['telefono'],
+                'csrf_token' => $this->generateCsrf()
+            ]);
+            return;
+        }
+
+        // Verificar código
+        if (\app\models\VerificacionWhatsApp::verificarCodigo($datosRegistro['telefono'], $codigo)) {
+            // Código válido, crear usuario
+            $usuario = new \app\models\Usuario();
+            $usuario->fill($datosRegistro);
+            
+            if ($usuario->save()) {
+                // Limpiar datos temporales
+                $this->session->remove('registro_temporal');
+                
+                // Iniciar sesión automáticamente
+                $this->session->iniciarSesion($usuario->toArray());
+                
+                // Mostrar mensaje de éxito y redirigir
+                $this->session->setFlash('success', '¡Registro completado exitosamente! Tu número de WhatsApp ha sido verificado.');
+                $this->redirect('/');
+                return;
+            } else {
+                $error = 'Error al crear la cuenta. Inténtalo nuevamente.';
+            }
+        } else {
+            $error = 'Código de verificación incorrecto o expirado.';
+        }
+
+        Response::render($this->viewsDir, 'verificar_whatsapp', [
+            'error' => $error,
+            'telefono' => $datosRegistro['telefono'],
+            'csrf_token' => $this->generateCsrf(),
+            'tiempo_restante' => \app\models\VerificacionWhatsApp::getTiempoRestante($datosRegistro['telefono'])
+        ]);
+    }
+
+    /**
+     * Reenviar código de verificación
+     */
+    public function actionReenviarCodigo() {
+        $csrf_token = $this->input('csrf_token');
+        
+        if (!$this->validateCsrf($csrf_token)) {
+            echo json_encode(['success' => false, 'message' => 'Token inválido']);
+            return;
+        }
+
+        $datosRegistro = $this->session->get('registro_temporal');
+        if (!$datosRegistro) {
+            echo json_encode(['success' => false, 'message' => 'Sesión expirada']);
+            return;
+        }
+
+        // Verificar si puede reenviar (no ha excedido intentos)
+        if (\app\models\VerificacionWhatsApp::haExcedidoIntentos($datosRegistro['telefono'])) {
+            echo json_encode(['success' => false, 'message' => 'Has excedido el máximo de intentos']);
+            return;
+        }
+
+        // Generar nuevo código
+        $codigo = \app\models\VerificacionWhatsApp::generarCodigo($datosRegistro['telefono']);
+        
+        if ($codigo) {
+            $whatsappService = \app\services\WhatsAppService::create();
+            $resultado = $whatsappService->enviarCodigoVerificacion($datosRegistro['telefono'], $codigo);
+            
+            echo json_encode([
+                'success' => $resultado['success'],
+                'message' => $resultado['success'] ? 'Código reenviado correctamente' : $resultado['message']
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al generar nuevo código']);
+        }
     }
 
     public function actionLogout() {
@@ -235,28 +367,28 @@ class UsuarioController extends Controller {
     }
 
     /**
-     * Determinar si el usuario actual es administrador por email.
-     * Se valida contra una lista blanca de emails en app/config/admins.php que debe devolver un array de emails.
+     * Determinar si el usuario actual es administrador por ID.
+     * Se valida contra una lista blanca de IDs en app/config/admins.php que debe devolver un array de IDs.
      */
     private function isAdmin(): bool {
         $uid = $this->session->getUserId();
         if (!$uid) return false;
         $u = \app\models\Usuario::findById($uid);
-        if (!$u || empty($u['email'])) return false;
-        $email = strtolower((string)$u['email']);
-        $allowed = $this->adminEmails();
-        return in_array($email, $allowed, true);
+        if (!$u) return false;
+        $userId = (int)$u['id'];
+        $allowed = $this->adminIds();
+        return in_array($userId, $allowed, true);
     }
 
     /**
-     * Obtener lista de emails administradores desde config opcional.
+     * Obtener lista de IDs administradores desde config opcional.
      */
-    private function adminEmails(): array {
+    private function adminIds(): array {
         $configPath = __DIR__ . '/../config/admins.php';
         if (file_exists($configPath)) {
             $data = include $configPath;
             if (is_array($data)) {
-                return array_values(array_unique(array_map('strtolower', $data)));
+                return array_values(array_unique(array_map('intval', $data)));
             }
         }
         return [];

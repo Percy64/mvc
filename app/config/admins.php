@@ -1,13 +1,14 @@
 <?php
 /**
- * Lista blanca de emails con rol administrador.
- * Edita este archivo y coloca los emails que deben tener acceso de administrador.
+ * Lista blanca de IDs de usuarios con rol administrador.
+ * Edita este archivo y coloca los IDs que deben tener acceso de administrador.
  * Ejemplo:
  * return [
- *   'admin@tu-dominio.com',
- *   'otro.admin@tu-dominio.com'
+ *   1,
+ *   2,
+ *   5
  * ];
  */
 return [
-    // 'admin@localhost',
+    // 1, // ID del usuario administrador
 ];

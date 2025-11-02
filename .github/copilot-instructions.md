@@ -1,7 +1,7 @@
 # MVC Project Instructions for AI Agents
 
 ## Architecture Overview
-This is a custom PHP MVC framework designed for XAMPP environments. The application uses a single-entry point (`public/index.php`) with URL rewriting to route requests through the `App` class dispatcher.
+This is a custom PHP MVC framework designed for XAMPP environments. The application uses a single-entry point (`index.php` in root) with URL rewriting to route requests through the `App` class dispatcher.
 
 ### Core Components
 - **App.php**: Central router that parses URLs and dispatches to controllers
@@ -58,10 +58,12 @@ The `viewDir()` method strips namespace and "Controller" to get view directory p
 - Use path replacement pattern: `#PATH#css/main.css` becomes `/MVC/public/css/main.css`
 
 ## Database Configuration
-Database settings in `DataBase.php`:
-- Database: "mascotas_db" (actual current DB name)
-- Connection: PDO with persistent connections, UTF-8, timezone -03:00
-- Error handling: Exceptions with custom error messages
+Database settings in `DataBase.php` with flexible configuration:
+- **Default**: Database "mascotas_db", localhost, root user
+- **Config File**: Load from `app/config/db.php` (see `db.php.example`)
+- **Environment Variables**: Override with `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `DB_PORT`
+- Connection: PDO with UTF-8, 5-second timeout, exception mode
+- Priority: Environment vars > config file > defaults
 
 ## Database Patterns
 ### Model Implementation
@@ -90,18 +92,23 @@ public function __construct() {
 
 ## Development Setup
 - **Environment**: XAMPP with Apache mod_rewrite enabled
-- **Document Root**: `public/` directory (assets served directly)
-- **Error Reporting**: Enabled in `public/index.php` for development
-- **URL Rewrite**: Base `/MVC/public/` in `public/.htaccess` (project folder is `mvc`)
+- **Entry Point**: `index.php` in root (not public/), handles routing via .htaccess
+- **Document Root**: `app/public/` for static assets (CSS/JS), root .htaccess handles routing
+- **Error Reporting**: Enabled in `index.php` for development
+- **URL Rewrite**: Root .htaccess redirects to `index.php?url=...`, `app/public/.htaccess` uses `/MVC/public/` base
 - **Test Environment**: `test.php` provides system status and routing tests
 - **Database Import**: Use `mascotas.sql` to set up the database structure
+- **Configuration**: Copy `app/config/*.example` files to remove `.example` extension
 
 ## Development Workflow
-- **Starting Development**: Access via `http://localhost/MVC/public/` 
+- **Starting Development**: Access via `http://localhost/MVC/` (root .htaccess routes to index.php)
+- **Static Assets**: Access via `http://localhost/MVC/public/` (CSS/JS served directly)
 - **Database Setup**: Import `mascotas.sql` into `mascotas_db` database
+- **Configuration**: Set up `app/config/db.php` from `db.php.example` if needed
 - **File Organization**: Controllers in `app/controllers/`, models in `app/models/`, views in `app/views/`
-- **Asset Management**: Public assets (CSS/JS) in `public/`, uploaded files in `assets/`
+- **Asset Management**: Public assets (CSS/JS) in `app/public/`, uploaded files in `assets/`
 - **Debugging**: Error reporting enabled; check Apache error logs for routing issues
+- **System Check**: Use `test.php` to verify all components are working
 
 ## Key Implementation Patterns
 1. **Controllers**: Must extend `Controller`, use namespace `app\controllers`, inject `$this->session`
@@ -120,5 +127,5 @@ public function __construct() {
 ## File Upload & Assets
 - **Upload Directory**: `assets/images/mascotas/` for pet photos
 - **QR Codes**: Generated in `assets/qr/` directory
-- **Public Assets**: CSS in `public/css/`, JS in `public/js/`
+- **Public Assets**: CSS in `app/public/css/`, JS in `app/public/js/`
 - **Asset Loading**: Use `SiteController::head()` for common CSS/JS with path replacement

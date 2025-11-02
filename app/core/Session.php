@@ -80,4 +80,55 @@ class Session {
     public function getUserId() {
         return $_SESSION['id'] ?? null;
     }
+    
+    /**
+     * Guardar datos en la sesión
+     */
+    public function set($key, $value) {
+        $_SESSION[$key] = $value;
+    }
+    
+    /**
+     * Obtener datos de la sesión
+     */
+    public function get($key, $default = null) {
+        return $_SESSION[$key] ?? $default;
+    }
+    
+    /**
+     * Eliminar datos de la sesión
+     */
+    public function remove($key) {
+        if (isset($_SESSION[$key])) {
+            unset($_SESSION[$key]);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Establecer mensaje flash (se elimina después de leer)
+     */
+    public function setFlash($key, $message) {
+        $_SESSION['flash'][$key] = $message;
+    }
+    
+    /**
+     * Obtener mensaje flash
+     */
+    public function getFlash($key) {
+        if (isset($_SESSION['flash'][$key])) {
+            $message = $_SESSION['flash'][$key];
+            unset($_SESSION['flash'][$key]);
+            return $message;
+        }
+        return null;
+    }
+    
+    /**
+     * Verificar si existe un mensaje flash
+     */
+    public function hasFlash($key) {
+        return isset($_SESSION['flash'][$key]);
+    }
 }

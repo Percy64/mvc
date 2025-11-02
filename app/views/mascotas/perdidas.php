@@ -102,11 +102,10 @@ $ROOT = \Controller::rootBase();
                 <?= htmlspecialchars($especie) ?><?php if ($edad) echo ' · ' . htmlspecialchars($edad); ?>
               </p>
               <p class="small text-truncate mb-3"><?= htmlspecialchars($desc) ?></p>
-              <div class="mt-auto d-flex gap-2">
-                <a href="<?= $BASE ?>mascota/perfil?id=<?= urlencode((string)$id) ?>" class="btn btn-sm btn-primary">
-                  Ver perfil
+              <div class="mt-auto text-center">
+                <a href="<?= $BASE ?>mascota/qrinfo?id=<?= urlencode((string)$id) ?>" class="btn btn-sm btn-primary">
+                  📞 Contactar dueño
                 </a>
-                <a href="<?= $BASE ?>" class="btn btn-sm btn-outline-secondary">Inicio</a>
               </div>
             </div>
           </div>

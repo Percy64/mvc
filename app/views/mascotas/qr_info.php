@@ -58,6 +58,36 @@
             font-size: 1.1em;
             line-height: 1.6;
         }
+        .contact-button {
+            background: linear-gradient(45deg, #25d366, #128c7e);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+        .contact-button:hover {
+            background: linear-gradient(45deg, #128c7e, #25d366);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+            color: white;
+        }
+        .call-button {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
         .pet-name {
             color: #007bff;
             font-weight: 600;
@@ -136,11 +166,35 @@
                                     <strong>Dueño:</strong> <?= htmlspecialchars(($owner['nombre'] ?? '') . ' ' . ($owner['apellido'] ?? '')) ?>
                                 </div>
                                 <?php if (!empty($owner['telefono'])): ?>
-                                <div class="contact-info mb-2">
-                                    <strong>Teléfono:</strong> 
-                                    <a href="tel:<?= htmlspecialchars($owner['telefono']) ?>" class="text-decoration-none">
-                                        <?= htmlspecialchars($owner['telefono']) ?>
-                                    </a>
+                                <div class="contact-info mb-3">
+                                    <strong>Teléfono / WhatsApp:</strong> 
+                                    <div class="mt-2">
+                                        <a href="tel:<?= htmlspecialchars($owner['telefono']) ?>" 
+                                           class="call-button me-2 mb-2">
+                                            📞 Llamar
+                                        </a>
+                                        <?php
+                                        // Generar enlace de WhatsApp usando formateo mejorado
+                                        $whatsappNumber = preg_replace('/[^0-9+]/', '', $owner['telefono']);
+                                        if (substr($whatsappNumber, 0, 1) !== '+') {
+                                            // Si no empieza con +, asumir que es número argentino
+                                            if (substr($whatsappNumber, 0, 2) === '54') {
+                                                $whatsappNumber = '+' . $whatsappNumber;
+                                            } else {
+                                                $whatsappNumber = '+54' . $whatsappNumber;
+                                            }
+                                        }
+                                        $petName = htmlspecialchars($mascota['nombre'] ?? 'tu mascota');
+                                        $message = "¡Hola! He encontrado a {$petName}. ¿Podrías confirmar si es tu mascota? 🐾";
+                                        $whatsappUrl = "https://wa.me/" . ltrim($whatsappNumber, '+') . "?text=" . urlencode($message);
+                                        ?>
+                                        <a href="<?= htmlspecialchars($whatsappUrl) ?>" 
+                                           target="_blank" 
+                                           class="contact-button mb-2">
+                                            💬 WhatsApp
+                                        </a>
+                                    </div>
+                                    <small class="text-muted d-block"><?= htmlspecialchars($owner['telefono']) ?></small>
                                 </div>
                                 <?php endif; ?>
                                 <?php if (!empty($owner['email'])): ?>
@@ -163,8 +217,21 @@
                         
                         <?php if (isset($mascota['perdido']) && $mascota['perdido']): ?>
                         <div class="contact-section" style="background: linear-gradient(45deg, #fff3cd, #ffeaa7);">
-                            <h6 class="text-danger mb-2">⚠️ ¿Encontraste a esta mascota?</h6>
-                            <p class="small mb-2">Por favor contacta inmediatamente al dueño usando la información de arriba.</p>
+                            <h6 class="text-danger mb-3">⚠️ ¿Encontraste a esta mascota?</h6>
+                            <p class="small mb-3">Por favor contacta inmediatamente al dueño usando los botones de arriba.</p>
+                            <?php if (!empty($owner['telefono'])): ?>
+                            <div class="text-center mb-3">
+                                <?php
+                                $urgentMessage = "🚨 ¡URGENTE! He encontrado a {$petName}. Está seguro/a. Por favor contáctame lo antes posible.";
+                                $urgentWhatsappUrl = "https://wa.me/" . ltrim($whatsappNumber, '+') . "?text=" . urlencode($urgentMessage);
+                                ?>
+                                <a href="<?= htmlspecialchars($urgentWhatsappUrl) ?>" 
+                                   target="_blank" 
+                                   class="btn btn-danger btn-lg">
+                                    🆘 Contactar URGENTE por WhatsApp
+                                </a>
+                            </div>
+                            <?php endif; ?>
                             <p class="small mb-0 text-muted">Fecha reportada como perdida: <?= date('d/m/Y') ?></p>
                         </div>
                         <?php endif; ?>

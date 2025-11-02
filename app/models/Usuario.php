@@ -42,6 +42,39 @@ class Usuario extends Model {
     }
     
     /**
+     * Formatear número de WhatsApp para URL
+     */
+    public static function formatWhatsAppNumber($number) {
+        if (empty($number)) return null;
+        
+        // Remover espacios, guiones y otros caracteres
+        $number = preg_replace('/[^0-9+]/', '', $number);
+        
+        // Si no tiene código de país, agregar +54 (Argentina)
+        if (!str_starts_with($number, '+')) {
+            if (str_starts_with($number, '54')) {
+                $number = '+' . $number;
+            } else {
+                $number = '+54' . $number;
+            }
+        }
+        
+        return $number;
+    }
+    
+    /**
+     * Generar URL de WhatsApp usando el teléfono
+     */
+    public function getWhatsAppUrl($message = '') {
+        if (empty($this->telefono)) return null;
+        
+        $number = self::formatWhatsAppNumber($this->telefono);
+        $encodedMessage = urlencode($message);
+        
+        return "https://wa.me/{$number}?text={$encodedMessage}";
+    }
+    
+    /**
      * Validar datos del usuario
      */
     public function validate($data, $isUpdate = false) {
@@ -57,16 +90,11 @@ class Usuario extends Model {
             $errores[] = 'El apellido debe tener al menos 2 caracteres.';
         }
         
-        // Validar email
-        if (empty($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errores[] = 'El email debe ser válido.';
-        } else {
-            // Verificar si el email ya existe
-            if (!$isUpdate || $data['email'] != $this->email) {
-                if (self::emailExists($data['email'])) {
-                    $errores[] = 'El email ya está registrado.';
-                }
-            }
+        // Validar teléfono (que también será usado para WhatsApp)
+        if (empty($data['telefono']) || strlen(trim($data['telefono'])) < 8) {
+            $errores[] = 'El número de teléfono es obligatorio y debe tener al menos 8 dígitos.';
+        } elseif (!preg_match('/^[\+]?[0-9\s\-\(\)]+$/', trim($data['telefono']))) {
+            $errores[] = 'El número de teléfono debe contener solo números, espacios, guiones y el símbolo +.';
         }
         
         // Validar password (solo al crear)
@@ -75,15 +103,6 @@ class Usuario extends Model {
         }
         
         return $errores;
-    }
-    
-    /**
-     * Verificar si el email ya existe
-     */
-    public static function emailExists($email) {
-        $sql = "SELECT id FROM usuarios WHERE email = ?";
-        $result = DataBase::getRecord($sql, [$email]);
-        return $result !== null;
     }
     
     /**

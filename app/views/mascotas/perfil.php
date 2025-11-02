@@ -399,6 +399,19 @@
                             </div>
                             <?php endif; ?>
                             
+                            <div class="col-12">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="fs-6">💬</span>
+                                    <div>
+                                        <small class="text-muted d-block">WhatsApp</small>
+                                        <a href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $owner['telefono']) ?>?text=Hola%20<?= urlencode($owner['nombre']) ?>,%20vi%20a%20tu%20mascota%20<?= urlencode($mascota['nombre']) ?>%20en%20la%20plataforma" 
+                                           class="text-decoration-none small fw-medium" target="_blank" rel="noopener">
+                                            <?= htmlspecialchars($owner['telefono']) ?>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <?php if (!empty($owner['direccion'])): ?>
                             <div class="col-12">
                                 <div class="d-flex align-items-start gap-2">
@@ -425,6 +438,10 @@
                             <span class="fs-6">📞</span> Llamar
                         </a>
                         <?php endif; ?>
+                        <a href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $owner['telefono']) ?>?text=Hola%20<?= urlencode($owner['nombre']) ?>,%20vi%20a%20tu%20mascota%20<?= urlencode($mascota['nombre']) ?>%20en%20la%20plataforma.%20Me%20gustar%C3%ADa%20hacer%20una%20consulta." 
+                           class="btn btn-success btn-sm" target="_blank" rel="noopener">
+                            <span class="fs-6">💬</span> Contactar por WhatsApp
+                        </a>
                     </div>
                 </div>
             </div>

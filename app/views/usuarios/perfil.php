@@ -106,6 +106,15 @@
                         </div>
                         <h4 class="card-title fw-bold mb-2"><?= htmlspecialchars($usuario['nombre'] ?? '') ?> <?= htmlspecialchars($usuario['apellido'] ?? '') ?></h4>
                         <p class="card-text text-muted fs-6 mb-3"><?= htmlspecialchars($usuario['email'] ?? '') ?></p>
+                        
+                        <!-- Botón de WhatsApp -->
+                        <div class="mb-3">
+                            <a href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $usuario['telefono']) ?>?text=Hola%20<?= urlencode($usuario['nombre']) ?>,%20vi%20tu%20perfil%20en%20la%20plataforma%20de%20mascotas" 
+                               class="btn btn-success btn-sm w-100" target="_blank" rel="noopener">
+                                <span class="fs-6">💬</span> Contactar por WhatsApp
+                            </a>
+                        </div>
+                        
                         <div class="bg-light rounded-3 p-3 mb-4">
                             <div class="d-flex align-items-center justify-content-center gap-2 text-muted">
                                 <span class="fs-5">📅</span>

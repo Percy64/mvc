@@ -26,13 +26,15 @@ CREATE TABLE `codigos_qr` (
   `codigo` varchar(255) NOT NULL,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `activo` tinyint(1) DEFAULT 1,
+  `url_qr` varchar(255) DEFAULT NULL,
+  `ruta_imagen` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_qr`),
   UNIQUE KEY `codigo` (`codigo`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `codigos_qr` */
 
-insert  into `codigos_qr`(`id_qr`,`codigo`,`fecha_creacion`,`activo`) values (1,'http://localhost/login/vistas/mascotas/perfil.php?id=72','2025-10-14 21:50:33',1);
+insert  into `codigos_qr`(`id_qr`,`codigo`,`fecha_creacion`,`activo`,`url_qr`,`ruta_imagen`) values (51,'QR-76-690183d657858','2025-10-29 00:02:46',1,'http://localhost/lost-found/perfil_mascota.php?id=76','assets/images/qr/qr_mascota_76_1761706966.png');
 
 /*Table structure for table `fotos_mascotas` */
 
@@ -47,11 +49,9 @@ CREATE TABLE `fotos_mascotas` (
   PRIMARY KEY (`id_foto`),
   KEY `id_mascota` (`id_mascota`),
   CONSTRAINT `fotos_mascotas_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascotas` (`id_mascota`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `fotos_mascotas` */
-
-insert  into `fotos_mascotas`(`id_foto`,`id_mascota`,`url`,`descripcion`,`fecha_subida`) values (1,72,'assets/images/mascotas/mascota_1760488784_819b820b.jfif',NULL,'2025-10-14 21:39:51');
 
 /*Table structure for table `historial_medico` */
 
@@ -66,7 +66,7 @@ CREATE TABLE `historial_medico` (
   PRIMARY KEY (`id_historial`),
   KEY `id_mascota` (`id_mascota`),
   CONSTRAINT `historial_medico_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascotas` (`id_mascota`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `historial_medico` */
 
@@ -85,19 +85,18 @@ CREATE TABLE `mascotas` (
   `id` int(11) NOT NULL,
   `id_qr` int(11) DEFAULT NULL,
   `foto_url` varchar(255) DEFAULT NULL,
-  `fecha_registro` datetime NOT NULL DEFAULT current_timestamp(),
+  `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
   `perdido` tinyint(1) DEFAULT 0,
-  `descripcion` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id_mascota`),
   UNIQUE KEY `id_qr` (`id_qr`),
   KEY `id_dueño` (`id`),
   CONSTRAINT `mascotas_ibfk_1` FOREIGN KEY (`id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `mascotas_ibfk_2` FOREIGN KEY (`id_qr`) REFERENCES `codigos_qr` (`id_qr`)
-) ENGINE=InnoDB AUTO_INCREMENT=78 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `mascotas` */
 
-insert  into `mascotas`(`id_mascota`,`nombre`,`especie`,`raza`,`edad`,`sexo`,`color`,`id`,`id_qr`,`foto_url`,`fecha_registro`,`perdido`,`descripcion`) values (72,'botitas','gato',NULL,4,NULL,NULL,13,1,'assets/images/mascotas/mascota_1760488784_819b820b.jfif','2025-10-25 23:10:52',0,NULL),(73,'lona','Perro','border coli',1,'Hembra','blanco y negro',15,NULL,'assets/images/mascotas/mascota_1761606238_68fffa5ed0e6f.jpg','2025-10-27 19:39:25',0,NULL),(74,'simba','gato','gris',4,'macho',NULL,15,NULL,'assets/images/mascotas/mascota_15_1761699453.jpg','2025-10-28 21:57:33',0,NULL),(75,'luna','gato',NULL,2,'macho','gris',15,NULL,'assets/images/mascotas/mascota_15_1761700197.jpg','2025-10-28 22:09:57',0,NULL),(76,'nala','Gato','calico',4,'Hembra','vaios',16,NULL,'assets/images/mascotas/mascota_1761865256_6903ee28a205e.jpg','2025-10-30 20:00:56',0,NULL),(77,'nala','Gato','calico',4,'Hembra','varios',16,NULL,'assets/images/mascotas/mascota_1761919451_6904c1dbbd1ef.jpg','2025-10-31 11:04:11',0,NULL);
+insert  into `mascotas`(`id_mascota`,`nombre`,`especie`,`raza`,`edad`,`sexo`,`color`,`id`,`id_qr`,`foto_url`,`fecha_registro`,`perdido`) values (79,'simba','Gato','gris',4,'Macho','',1,NULL,'assets/images/mascotas/mascota_1761845956_6903a2c4360ed.jpg','2025-10-30 14:39:16',NULL);
 
 /*Table structure for table `usuarios` */
 
@@ -114,11 +113,11 @@ CREATE TABLE `usuarios` (
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `foto_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 /*Data for the table `usuarios` */
 
-insert  into `usuarios`(`id`,`nombre`,`apellido`,`telefono`,`email`,`direccion`,`password`,`fecha_creacion`,`foto_url`) values (13,'cristian','merlo',NULL,'cristian@gmail.com',NULL,'$2y$10$qe2TzM3GqXQgI36ylqYyRumGZzUmylPh5/e1PVOR.a4xqFzRr2Hp2','2025-10-14 21:37:33','http://localhost/login/assets/images/usuarios/user_1760488652_2ebf6e17.png'),(14,'Test','User',NULL,'test@test.com',NULL,'\\.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi','2025-10-23 19:59:05',NULL),(15,'emanuel','merlo','3417208555','emanuel@gmail.com','','$2y$10$qD4TTCo.c5w6/1H7KrIowu1jNjXwu4gdhLamDKxSwVdxi9YjqW7Q6','2025-10-23 20:05:59','assets/images/usuarios/usuario_15_1761699153.jpeg'),(16,'Emanuel','Merlo','03413613207','emanuel1@gmail.com','rosario','$2y$10$XF3z8hAI16va1j59hWfycublHyTft5f85jLUcQ8ZPKKZlALAVhbrK','2025-10-29 21:32:44','assets/usuarios/usuario_1761864754_6903ec32d8fd9.jpg');
+insert  into `usuarios`(`id`,`nombre`,`apellido`,`telefono`,`email`,`direccion`,`password`,`fecha_creacion`,`foto_url`) values (1,'Emanuel','Merlo','03413613207','emanuelmerlo15@gmail.com','PASCO 123','$2y$10$xchjtvrAZrfQLyl5JJh3Benh90h7S5pM9/51hVdmoLXsU8tMVSh4G','2025-10-10 02:29:26','assets/images/usuarios/usuario_1761846761_6903a5e9bc31a.jpg'),(2,'Juan','Pérez','341-5551234','juan.perez@example.com','Calle Falsa 123, Rosario','$2b$10$hashDeEjemplo1234567890','2025-10-10 02:49:46',NULL),(3,'Juan','Pérez','341-5551234','juan.perez@example.com','Calle Falsa 123, Rosario','$2b$10$hashEjemplo1','2025-10-10 04:12:30',NULL),(4,'María','Gómez','341-5555678','maria.gomez@example.com','Av. Libertad 456, Rosario','$2b$10$hashEjemplo2','2025-10-10 04:12:30',NULL),(5,'Carlos','López','341-5559876','carlos.lopez@example.com','San Martín 789, Rosario','$2b$10$hashEjemplo3','2025-10-10 04:12:30',NULL),(6,'Lucía','Fernández','341-5554321','lucia.fernandez@example.com','Belgrano 321, Rosario','$2b$10$hashEjemplo4','2025-10-10 04:12:30',NULL),(7,'Pedro','Martínez','341-5552468','pedro.martinez@example.com','Mitre 654, Rosario','$2b$10$hashEjemplo5','2025-10-10 04:12:30',NULL),(13,'brisa','merlo',NULL,'brisa@gmail.com',NULL,'$2y$10$YNkCLndmY/oc6oZ6cUB75Ol10WEy3QpEy4ieResFEj2ArBcMnz50K','2025-10-11 21:10:56','http://localhost/login/assets/images/usuarios/user_1760227856_68df8210.jpg'),(14,'ema','merlo','03417208555','emanuel1@gmail.com','','$2y$10$4OnhoZd.sSuIhrztomn6Vea.2rtSjS/4kWkSHnnSs6rI74Hye5UYm','2025-10-30 14:48:25','assets/images/usuarios/usuario_1761846944_6903a6a096f13.jpg'),(15,'Emanuel Merlo','Merlo','+543413613207','emanuel.c.merlo@hotmail.com','2000','$2y$10$RA56fGIDfp.Xwqo2ZhQjcecNjnfMemWCrNZ2U9EY2OTLWVS3xMNzC','2025-10-31 23:43:27',NULL);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

@@ -57,21 +57,24 @@
                         
                         <div class="mb-3">
                             <label for="email" class="form-label">
-                                Email <span class="text-danger">*</span>
+                                Email
                             </label>
-                            <input type="email" class="form-control" id="email" name="email" required 
-                                   value="<?= htmlspecialchars($usuario['email'] ?? '') ?>">
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="<?= htmlspecialchars($usuario['email'] ?? '') ?>"
+                                   placeholder="tu@email.com (opcional)">
+                            <div class="form-text">Campo opcional - no es necesario para el registro</div>
                         </div>
                         
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="telefono" class="form-label">
-                                        Teléfono <span class="text-danger">*</span>
+                                        Teléfono / WhatsApp <span class="text-danger">*</span>
                                     </label>
                                     <input type="tel" class="form-control" id="telefono" name="telefono" required
                                            value="<?= htmlspecialchars($usuario['telefono'] ?? '') ?>"
-                                           placeholder="Ej: 341-1234567">
+                                           placeholder="Ej: +543411234567">
+                                    <div class="form-text">Para llamadas y WhatsApp</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
