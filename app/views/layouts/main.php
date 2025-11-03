@@ -61,6 +61,9 @@
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/login">Iniciar sesión</a></li>
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/register">Registrarse</a></li>
                     <li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
+                    <?php else: ?>
+                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>usuario/perfil">Mi perfil</a></li>
+                    <li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
                     <?php endif; ?>
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>">Inicio</a></li>
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
