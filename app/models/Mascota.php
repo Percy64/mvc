@@ -20,6 +20,9 @@ class Mascota extends Model {
     public $usuario_id; // Se mapea a la columna `id` (dueño) en BASE.sql
     public $sexo; // Existe en BASE.sql
     public $color; // Existe en BASE.sql
+    public $ultima_ubicacion; // Nueva: texto libre
+    public $ultima_lat; // Nueva: coordenadas
+    public $ultima_lng; // Nueva: coordenadas
     
     public function __construct($data = []) {
         if (!empty($data)) {
@@ -58,6 +61,18 @@ class Mascota extends Model {
         }
         $this->sexo = array_key_exists('sexo', $data) ? $data['sexo'] : $this->sexo;
         $this->color = array_key_exists('color', $data) ? $data['color'] : $this->color;
+        // Ubicación de pérdida
+        if (array_key_exists('ultima_ubicacion', $data)) {
+            $txt = is_string($data['ultima_ubicacion']) ? trim($data['ultima_ubicacion']) : '';
+            if (function_exists('mb_substr')) { $txt = mb_substr($txt, 0, 255, 'UTF-8'); } else { $txt = substr($txt, 0, 255); }
+            $this->ultima_ubicacion = $txt !== '' ? $txt : null;
+        }
+        if (array_key_exists('ultima_lat', $data)) {
+            $this->ultima_lat = is_numeric($data['ultima_lat']) ? (float)$data['ultima_lat'] : null;
+        }
+        if (array_key_exists('ultima_lng', $data)) {
+            $this->ultima_lng = is_numeric($data['ultima_lng']) ? (float)$data['ultima_lng'] : null;
+        }
     }
     
     /**
@@ -122,7 +137,7 @@ class Mascota extends Model {
         $edadVal = (isset($this->edad) && $this->edad !== '' && $this->edad !== null) ? $this->edad : null;
         if ($this->id_mascota) {
             // Actualizar
-            $sql = "UPDATE mascotas SET nombre = ?, especie = ?, raza = ?, edad = ?, sexo = ?, color = ?, descripcion = ?, foto_url = ? WHERE id_mascota = ?";
+            $sql = "UPDATE mascotas SET nombre = ?, especie = ?, raza = ?, edad = ?, sexo = ?, color = ?, descripcion = ?, foto_url = ?, ultima_ubicacion = ?, ultima_lat = ?, ultima_lng = ? WHERE id_mascota = ?";
             $descVal = ($this->descripcion !== null && $this->descripcion !== '') ? $this->descripcion : null;
             $params = [
                 $this->nombre,
@@ -133,12 +148,15 @@ class Mascota extends Model {
                 $this->color,
                 $descVal,
                 $this->foto_url,
+                $this->ultima_ubicacion,
+                $this->ultima_lat,
+                $this->ultima_lng,
                 $this->id_mascota
             ];
             return DataBase::execute($sql, $params) > 0;
         } else {
             // Insertar (mapear usuario_id a columna `id`)
-            $sql = "INSERT INTO mascotas (nombre, especie, raza, edad, sexo, color, descripcion, id, foto_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO mascotas (nombre, especie, raza, edad, sexo, color, descripcion, id, foto_url, ultima_ubicacion, ultima_lat, ultima_lng) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $descVal = ($this->descripcion !== null && $this->descripcion !== '') ? $this->descripcion : null;
             $params = [
                 $this->nombre,
@@ -149,7 +167,10 @@ class Mascota extends Model {
                 $this->color,
                 $descVal,
                 $this->usuario_id,
-                $this->foto_url
+                $this->foto_url,
+                $this->ultima_ubicacion,
+                $this->ultima_lat,
+                $this->ultima_lng
             ];
             $result = DataBase::execute($sql, $params);
             if ($result > 0) {
@@ -174,6 +195,28 @@ class Mascota extends Model {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Actualizar última ubicación de pérdida (texto y/o coordenadas)
+     */
+    public function updateUltimaUbicacion($ubicacion = null, $lat = null, $lng = null) {
+        if (!$this->id_mascota) return false;
+        $txt = is_string($ubicacion) ? trim($ubicacion) : null;
+        if ($txt !== null) {
+            if (function_exists('mb_substr')) { $txt = mb_substr($txt, 0, 255, 'UTF-8'); } else { $txt = substr($txt, 0, 255); }
+            if ($txt === '') $txt = null;
+        }
+        $latVal = is_numeric($lat) ? (float)$lat : null;
+        $lngVal = is_numeric($lng) ? (float)$lng : null;
+        $sql = "UPDATE mascotas SET ultima_ubicacion = ?, ultima_lat = ?, ultima_lng = ? WHERE id_mascota = ?";
+        $ok = DataBase::execute($sql, [$txt, $latVal, $lngVal, $this->id_mascota]) > 0;
+        if ($ok) {
+            $this->ultima_ubicacion = $txt;
+            $this->ultima_lat = $latVal;
+            $this->ultima_lng = $lngVal;
+        }
+        return $ok;
     }
     
     /**
@@ -262,8 +305,8 @@ class Mascota extends Model {
     /**
      * Registrar reporte de mascota encontrada por otro usuario
      */
-    public static function registrarReporteEncontrada($id_mascota, $usuario_reporta = null) {
-        // Crear tabla de reportes si no existe
+    public static function registrarReporteEncontrada($id_mascota, $usuario_reporta = null, $ubicacion = null, $descripcion = null, $contacto = null, $lat = null, $lng = null) {
+        // Crear/asegurar tabla con columnas extendidas
         $createTable = "CREATE TABLE IF NOT EXISTS reportes_encontradas (
             id_reporte INT AUTO_INCREMENT PRIMARY KEY,
             id_mascota INT NOT NULL,
@@ -271,21 +314,33 @@ class Mascota extends Model {
             fecha_reporte TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             ip_reporte VARCHAR(45),
             procesado BOOLEAN DEFAULT FALSE,
+            ubicacion VARCHAR(255) NULL,
+            descripcion VARCHAR(255) NULL,
+            contacto VARCHAR(255) NULL,
+            lat DECIMAL(10,7) NULL,
+            lng DECIMAL(10,7) NULL,
+            INDEX idx_mascota (id_mascota),
+            INDEX idx_coords (lat, lng),
             FOREIGN KEY (id_mascota) REFERENCES mascotas(id_mascota) ON DELETE CASCADE,
             FOREIGN KEY (usuario_reporta) REFERENCES usuarios(id) ON DELETE SET NULL
-        )";
-        
-        try {
-            DataBase::execute($createTable);
-        } catch (\Exception $e) {
-            // La tabla ya existe o hay otro error, continuar
-        }
-        
-        // Insertar el reporte
-        $sql = "INSERT INTO reportes_encontradas (id_mascota, usuario_reporta, ip_reporte) VALUES (?, ?, ?)";
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+        try { DataBase::execute($createTable); } catch (\Throwable $e) { /* ignore */ }
+
+        // Normalizar strings
+        $ubicacion = is_string($ubicacion) && $ubicacion !== '' ? trim($ubicacion) : null;
+        $descripcion = is_string($descripcion) && $descripcion !== '' ? trim($descripcion) : null;
+        $contacto = is_string($contacto) && $contacto !== '' ? trim($contacto) : null;
+
+        // Normalizar coords
+        $latVal = (is_numeric($lat) ? (float)$lat : null);
+        $lngVal = (is_numeric($lng) ? (float)$lng : null);
+
         $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $result = DataBase::execute($sql, [$id_mascota, $usuario_reporta, $ip]);
-        
+        $sql = "INSERT INTO reportes_encontradas (id_mascota, usuario_reporta, ip_reporte, ubicacion, descripcion, contacto, lat, lng)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $result = DataBase::execute($sql, [$id_mascota, $usuario_reporta, $ip, $ubicacion, $descripcion, $contacto, $latVal, $lngVal]);
+
         if ($result > 0) {
             return DataBase::obtenerUltimoId();
         }

@@ -134,7 +134,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="d-grid">
-                                    <a href="<?= Controller::path() ?>mascota" class="btn btn-outline-secondary">Cancelar</a>
+                                    <a href="<?= Controller::path() ?>mascotgit a" class="btn btn-outline-secondary" onclick="if (document.referrer) { history.back(); return false; }">Cancelar</a>
                                 </div>
                             </div>
                         </div>

@@ -12,7 +12,6 @@ $ROOT = \Controller::rootBase();
                 <h1 class="display-5 fw-bold mb-3">Cuida a tus mascotas con BOTI 🐾</h1>
                 <p class="lead text-muted mb-4">Perfiles, fotos y códigos QR para que siempre estén identificadas y seguras.</p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="<?= $BASE ?>mascota" class="btn btn-primary btn-lg">Explorar mascotas</a>
                     <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-warning btn-lg">Mascotas perdidas</a>
                     <?php if (isset($session) && $session->estaLogueado()): ?>
                         <a href="<?= $BASE ?>mascota/crear" class="btn btn-outline-primary btn-lg">Registrar mi mascota</a>
@@ -159,7 +158,6 @@ $ROOT = \Controller::rootBase();
         <div class="d-flex justify-content-center gap-2">
             <?php if (isset($session) && $session->estaLogueado()): ?>
                 <a href="<?= $BASE ?>mascota/crear" class="btn btn-primary">Registrar mi mascota</a>
-                <a href="<?= $BASE ?>mascota" class="btn btn-outline-secondary">Ver mascotas</a>
                 <a href="<?= $BASE ?>mascota/perdidas" class="btn btn-outline-warning">Mascotas perdidas</a>
             <?php else: ?>
                 <a href="<?= $BASE ?>usuario/login" class="btn btn-primary">Iniciar sesión</a>

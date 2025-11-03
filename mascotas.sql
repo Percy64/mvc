@@ -48,6 +48,7 @@ CREATE TABLE `fotos_mascotas` (
   `fecha_subida` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id_foto`),
   KEY `id_mascota` (`id_mascota`),
+  KEY `idx_mascota_foto` (`id_mascota`,`id_foto`),
   CONSTRAINT `fotos_mascotas_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascotas` (`id_mascota`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -82,17 +83,46 @@ CREATE TABLE `mascotas` (
   `edad` int(11) DEFAULT NULL,
   `sexo` varchar(10) DEFAULT NULL,
   `color` varchar(50) DEFAULT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
   `id` int(11) NOT NULL,
   `id_qr` int(11) DEFAULT NULL,
   `foto_url` varchar(255) DEFAULT NULL,
   `fecha_registro` timestamp NOT NULL DEFAULT current_timestamp(),
   `perdido` tinyint(1) DEFAULT 0,
+  `ultima_ubicacion` varchar(255) DEFAULT NULL,
+  `ultima_lat` decimal(10,7) DEFAULT NULL,
+  `ultima_lng` decimal(10,7) DEFAULT NULL,
   PRIMARY KEY (`id_mascota`),
   UNIQUE KEY `id_qr` (`id_qr`),
   KEY `id_dueño` (`id`),
+  KEY `idx_perdido_id_mascota` (`perdido`,`id_mascota`),
+  KEY `idx_ultima_coords` (`ultima_lat`,`ultima_lng`),
   CONSTRAINT `mascotas_ibfk_1` FOREIGN KEY (`id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `mascotas_ibfk_2` FOREIGN KEY (`id_qr`) REFERENCES `codigos_qr` (`id_qr`)
 ) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+/*Table structure for table `reportes_encontradas` */
+
+DROP TABLE IF EXISTS `reportes_encontradas`;
+
+CREATE TABLE `reportes_encontradas` (
+  `id_reporte` int(11) NOT NULL AUTO_INCREMENT,
+  `id_mascota` int(11) NOT NULL,
+  `usuario_reporta` int(11) DEFAULT NULL,
+  `fecha_reporte` timestamp NOT NULL DEFAULT current_timestamp(),
+  `ip_reporte` varchar(45) DEFAULT NULL,
+  `procesado` tinyint(1) DEFAULT 0,
+  `ubicacion` varchar(255) DEFAULT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  `contacto` varchar(255) DEFAULT NULL,
+  `lat` decimal(10,7) DEFAULT NULL,
+  `lng` decimal(10,7) DEFAULT NULL,
+  PRIMARY KEY (`id_reporte`),
+  KEY `id_mascota` (`id_mascota`),
+  KEY `idx_coords` (`lat`,`lng`),
+  CONSTRAINT `reportes_encontradas_ibfk_1` FOREIGN KEY (`id_mascota`) REFERENCES `mascotas` (`id_mascota`) ON DELETE CASCADE,
+  CONSTRAINT `reportes_encontradas_ibfk_2` FOREIGN KEY (`usuario_reporta`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `mascotas` */
 
@@ -113,7 +143,7 @@ CREATE TABLE `usuarios` (
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `foto_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*Data for the table `usuarios` */
 

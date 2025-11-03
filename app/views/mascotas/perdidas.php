@@ -15,9 +15,6 @@ $ROOT = \Controller::rootBase();
         <a class="btn btn-outline-secondary" href="<?= $BASE ?>">
           <span class="fs-6">🏠</span> Inicio
         </a>
-        <a class="btn btn-primary" href="<?= $BASE ?>mascota">
-          <span class="fs-6">📚</span> Ver todas
-        </a>
       </div>
     </div>
 

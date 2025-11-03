@@ -112,6 +112,108 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mapa de última ubicación reportada -->
+        <?php 
+            $uTxt = $mascota['ultima_ubicacion'] ?? null;
+            $uLat = isset($mascota['ultima_lat']) ? (float)$mascota['ultima_lat'] : null;
+            $uLng = isset($mascota['ultima_lng']) ? (float)$mascota['ultima_lng'] : null;
+            $hasCoords = is_numeric($mascota['ultima_lat'] ?? null) && is_numeric($mascota['ultima_lng'] ?? null);
+        ?>
+        <?php if ($uTxt || $hasCoords): ?>
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                    <span class="fs-5">📍</span> Última ubicación reportada
+                </h6>
+                <a class="btn btn-sm btn-outline-primary" href="<?= Controller::path() ?>mascota/mapa">Ver en mapa general</a>
+            </div>
+            <div class="card-body">
+                <?php if ($uTxt): ?>
+                <p class="small mb-2"><strong>Referencia:</strong> <?= htmlspecialchars($uTxt) ?></p>
+                <?php endif; ?>
+                <div id="map-ultima" style="width:100%; height:320px; border-radius: 8px; border:1px solid #ddd;"></div>
+            </div>
+        </div>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script>
+        (function(){
+            const hasCoords = <?= $hasCoords ? 'true' : 'false' ?>;
+            const lat = <?= $hasCoords ? json_encode($uLat) : 'null' ?>;
+            const lng = <?= $hasCoords ? json_encode($uLng) : 'null' ?>;
+            const ubicText = <?= json_encode($uTxt, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+            const map = L.map('map-ultima').setView([-32.9587, -60.6930], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }).addTo(map);
+            function putMarker(c){
+                const mk = L.marker(c).addTo(map);
+                mk.bindPopup(ubicText ? ('<div class="small">' + escapeHtml(ubicText) + '</div>') : 'Última ubicación reportada');
+                map.setView(c, 15);
+            }
+            function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s])); }
+            async function geocode(q){
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`;
+                const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+                if (!res.ok) return null; const data = await res.json();
+                if (data && data.length) return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+                return null;
+            }
+            (async function(){
+                if (hasCoords) { putMarker([lat, lng]); return; }
+                if (ubicText) {
+                    const c = await geocode(ubicText);
+                    if (c) { putMarker(c); }
+                }
+            })();
+        })();
+        </script>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['id']) && ($_SESSION['id'] == ($mascota['usuario_id'] ?? $mascota['id'])) && ($mascota['perdido'] ?? 0)): ?>
+        <!-- Formulario para actualizar última ubicación (solo propietario) -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h6 class="mb-0 fw-bold d-flex align-items-center gap-2">
+                    <span class="fs-5">🗺️</span> Actualizar ubicación donde se perdió
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="<?= Controller::path() ?>mascota/actualizarubicacionperdida" class="row g-3">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                    <input type="hidden" name="id_mascota" value="<?= htmlspecialchars($mascota['id_mascota']) ?>">
+                    <div class="col-12">
+                        <label class="form-label small">Referencia de lugar (dirección o punto)</label>
+                        <input type="text" name="ultima_ubicacion" value="<?= htmlspecialchars($uTxt ?? '') ?>" class="form-control form-control-sm" placeholder="Ej: San Martín 1234, Rosario" />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Latitud</label>
+                        <input type="text" name="ultima_lat" id="ult-lat" value="<?= htmlspecialchars($uLat ?? '') ?>" class="form-control form-control-sm" placeholder="-32.95">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small">Longitud</label>
+                        <input type="text" name="ultima_lng" id="ult-lng" value="<?= htmlspecialchars($uLng ?? '') ?>" class="form-control form-control-sm" placeholder="-60.64">
+                    </div>
+                    <div class="col-12 d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="ultGeo()">Usar mi ubicación</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Guardar ubicación</button>
+                    </div>
+                </form>
+                <script>
+                function ultGeo(){
+                    if (!navigator.geolocation) { alert('Geolocalización no disponible'); return; }
+                    navigator.geolocation.getCurrentPosition(function(pos){
+                        try {
+                            document.getElementById('ult-lat').value = pos.coords.latitude.toFixed(6);
+                            document.getElementById('ult-lng').value = pos.coords.longitude.toFixed(6);
+                        } catch(e){}
+                    }, function(err){
+                        alert('No se pudo obtener tu ubicación (' + (err && err.message ? err.message : 'error') + ')');
+                    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+                }
+                </script>
+            </div>
+        </div>
+        <?php endif; ?>
         <?php endif; ?>
 
         <div class="row g-4">
@@ -476,15 +578,58 @@
                             </ul>
                         </div>
                         
-                        <!-- Botón para reportar que encontraste la mascota -->
+                        <!-- Reportar que encontraste la mascota: con ubicación opcional -->
                         <div class="mt-3">
-                            <form method="POST" action="<?= Controller::path() ?>mascota/reportarencontrada" onsubmit="return confirm('¿Confirmas que has encontrado a esta mascota? Se notificará al propietario.');" class="d-grid">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
-                                <input type="hidden" name="id_mascota" value="<?= htmlspecialchars($mascota['id_mascota']) ?>">
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    <span class="fs-6">✅</span> ¡La encontré!
-                                </button>
-                            </form>
+                            <button class="btn btn-success btn-sm mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#frmReporteEncontrada" aria-expanded="false" aria-controls="frmReporteEncontrada">
+                                <span class="fs-6">✅</span> ¡La encontré! (agregar ubicación)
+                            </button>
+                            <div class="collapse" id="frmReporteEncontrada">
+                                <div class="card card-body p-3 text-start">
+                                    <form method="POST" action="<?= Controller::path() ?>mascota/reportarencontrada" class="">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token ?? '') ?>">
+                                        <input type="hidden" name="id_mascota" value="<?= htmlspecialchars($mascota['id_mascota']) ?>">
+                                        <div class="mb-2">
+                                            <label class="form-label small">Ubicación (dirección o referencia)</label>
+                                            <input type="text" name="ubicacion" class="form-control form-control-sm" placeholder="Ej: Bv. Oroño y Córdoba, Rosario">
+                                        </div>
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-6">
+                                                <label class="form-label small">Latitud</label>
+                                                <input type="text" name="lat" id="rep-lat" class="form-control form-control-sm" placeholder="-32.95">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small">Longitud</label>
+                                                <input type="text" name="lng" id="rep-lng" class="form-control form-control-sm" placeholder="-60.64">
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small">Descripción (opcional)</label>
+                                            <textarea name="descripcion" class="form-control form-control-sm" rows="2" placeholder="Ej: La vi corriendo por el parque, parece asustada"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label small">Tu contacto (opcional)</label>
+                                            <input type="text" name="contacto" class="form-control form-control-sm" placeholder="Ej: 341-5551212 o email">
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="geoUbicacion()">Usar mi ubicación</button>
+                                            <button type="submit" class="btn btn-primary btn-sm">Enviar reporte</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <script>
+                            function geoUbicacion(){
+                                if (!navigator.geolocation) { alert('Geolocalización no disponible'); return; }
+                                navigator.geolocation.getCurrentPosition(function(pos){
+                                    try {
+                                        document.getElementById('rep-lat').value = pos.coords.latitude.toFixed(6);
+                                        document.getElementById('rep-lng').value = pos.coords.longitude.toFixed(6);
+                                    } catch(e){ /* ignore */ }
+                                }, function(err){
+                                    alert('No se pudo obtener tu ubicación (' + (err && err.message ? err.message : 'error') + ')');
+                                }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+                            }
+                            </script>
                         </div>
                     </div>
                 </div>

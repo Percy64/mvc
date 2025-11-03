@@ -436,6 +436,32 @@ class MascotaController extends Controller {
     }
 
     /**
+     * Mapa público con mascotas perdidas y reportes de encontradas
+     */
+    public function actionMapa() {
+        // Perdidas
+        $perdidas = \app\models\Mascota::getMascotasPerdidas();
+
+        // Reportes de encontradas (puede no existir la tabla en instalaciones viejas)
+        try {
+            $reportes = \DataBase::getRecords(
+                'SELECT r.id_reporte, r.id_mascota, r.fecha_reporte, r.ubicacion, r.descripcion AS reporte_descripcion, r.contacto, m.nombre, m.foto_url \n'
+                . 'FROM reportes_encontradas r INNER JOIN mascotas m ON m.id_mascota = r.id_mascota \n'
+                . 'ORDER BY r.fecha_reporte DESC'
+            );
+        } catch (\Throwable $e) {
+            $reportes = [];
+        }
+
+        Response::render($this->viewsDir, 'mapa', [
+            'perdidas' => $perdidas,
+            'reportes' => $reportes,
+            'layout' => 'main',
+            'title' => 'Mapa: perdidas y encontradas · BOTI'
+        ]);
+    }
+
+    /**
      * Eliminar mascota y redirigir al perfil del usuario
      */
     public function actionEliminar() {
@@ -514,6 +540,38 @@ class MascotaController extends Controller {
         
         $this->redirect('/mascota/perfil?id=' . urlencode((string)$id));
     }
+
+    /**
+     * Actualizar la ubicación donde se perdió la mascota (solo propietario)
+     */
+    public function actionActualizarUbicacionPerdida() {
+        $this->requireAuth();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { $this->redirect('/mascota'); }
+
+        $id = $this->input('id_mascota');
+        $token = $this->input('csrf_token');
+        $ubicacion = $this->input('ultima_ubicacion');
+        $lat = $this->input('ultima_lat');
+        $lng = $this->input('ultima_lng');
+
+        if (!$this->validateCsrf($token)) {
+            $_SESSION['flash_error'] = 'Token de seguridad inválido';
+            $this->redirect('/mascota/perfil?id=' . urlencode((string)$id));
+        }
+
+        $mascotaData = \app\models\Mascota::findById($id);
+        if (!$mascotaData) { $this->redirect('/mascota'); }
+        $ownerId = $mascotaData['usuario_id'] ?? ($mascotaData['id'] ?? null);
+        if ((string)$ownerId !== (string)$this->session->getUserId()) {
+            $_SESSION['flash_error'] = 'No tienes permisos para esta acción';
+            $this->redirect('/mascota/perfil?id=' . urlencode((string)$id));
+        }
+
+        $m = new \app\models\Mascota($mascotaData);
+        $ok = $m->updateUltimaUbicacion($ubicacion, $lat, $lng);
+        $_SESSION['flash_' . ($ok ? 'success' : 'error')] = $ok ? 'Ubicación de pérdida actualizada' : 'No se pudo actualizar la ubicación';
+        $this->redirect('/mascota/perfil?id=' . urlencode((string)$id));
+    }
     
     /**
      * Marcar mascota como encontrada (solo propietario)
@@ -567,6 +625,11 @@ class MascotaController extends Controller {
         
         $id = $this->input('id_mascota');
         $token = $this->input('csrf_token');
+        $ubicacion = $this->input('ubicacion');
+        $descripcion = $this->input('descripcion');
+        $contacto = $this->input('contacto');
+        $lat = $this->input('lat');
+        $lng = $this->input('lng');
         
         if (!$this->validateCsrf($token)) {
             $_SESSION['flash_error'] = 'Token de seguridad inválido';
@@ -585,8 +648,16 @@ class MascotaController extends Controller {
             $this->redirect('/mascota/perfil?id=' . urlencode((string)$id));
         }
         
-        // Registrar el reporte de encontrada
-        $reporteId = \app\models\Mascota::registrarReporteEncontrada($id, $this->session->getUserId());
+        // Registrar el reporte de encontrada (guardar ubicación/contacto si vienen)
+        $reporteId = \app\models\Mascota::registrarReporteEncontrada(
+            $id,
+            $this->session->getUserId(),
+            $ubicacion,
+            $descripcion,
+            $contacto,
+            $lat,
+            $lng
+        );
         if ($reporteId) {
             $_SESSION['flash_success'] = 'Gracias por reportar el hallazgo. El propietario será notificado.';
             

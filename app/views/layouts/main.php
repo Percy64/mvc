@@ -43,6 +43,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="<?= $BASE ?>">Inicio</a></li>
                             <li><a class="dropdown-item" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
+                            <li><a class="dropdown-item" href="<?= $BASE ?>mascota/mapa">Mapa</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <?php if ($ses->estaLogueado()): ?>
                             <li class="dropdown-item-text">Hola, <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?></li>
@@ -67,6 +68,7 @@
                     <?php endif; ?>
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>">Inicio</a></li>
                     <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>mascota/perdidas">Mascotas perdidas</a></li>
+                    <li class="nav-item d-lg-none"><a class="nav-link" href="<?= $BASE ?>mascota/mapa">Mapa</a></li>
                     <?php if ($ses->estaLogueado()): ?>
                     <li class="nav-item d-lg-none"><hr class="dropdown-divider"></li>
                     <li class="nav-item d-lg-none"><a class="nav-link text-danger" href="<?= $BASE ?>usuario/logout">Cerrar sesión</a></li>
